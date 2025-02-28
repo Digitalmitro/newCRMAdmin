@@ -3,106 +3,94 @@ import { useAuth } from "../../context/authContext";
 import moment from "moment";
 function AttendanceList() {
   const [attendance, setAttendance] = useState([]);
-  const { fetchAttendance } = useAuth();
-  const lateCount=attendance.filter(item=>item.status==="Late").length;
-  const absentCount=attendance.filter(item=>item.workStatus==="Absent").length;
-  const halfCount=attendance.filter(item=>item.workStatus==="Half Day").length;
-  const [range,setRange]=useState("this_month")
-
-  const getAddentanceData = async () => {
-    const data = await fetchAttendance(range);
-    if (data) {
-      setAttendance(data?.data);
-    }
+  const { allUsersAttendance } = useAuth();
+  const fetchAttendanceData = async () => {
+    const response = await allUsersAttendance();
+    console.log(response);
+    setAttendance(response);
   };
 
   useEffect(() => {
-    getAddentanceData();
-    
-  }, [range]);
-
+    fetchAttendanceData();
+  }, []);
   
-
   return (
     <div className=" p-4">
       <div className="border-b border-gray-300 p-2">
         <h2 className="text-[15px] font-medium pb-2">View Calendar</h2>
       </div>
-      <div className="pt-6 flex gap-4 justify-start">
-        <button className="border px-4 rounded text-[12px] font-medium pt-1 pb-1 cursor-pointer" onClick={()=>setRange("year")}>
-        Whole Year
-        </button>
-        <button className="border px-4 rounded text-[12px] font-medium pt-1 pb-1 cursor-pointer" onClick={()=>setRange("last_month")}>
-        Last Month 
-        </button>
-        <button className="border px-4 rounded text-[12px] font-medium pt-1 pb-1 cursor-pointer" onClick={()=>setRange("this_month")}>
-        This Month
-        </button>
-        <button className="border px-4 rounded text-[12px] font-medium pt-1 pb-1 cursor-pointer" onClick={()=>setRange("today")}>
-         Today
-        </button>
-      </div>
-      <div className="pt-6 flex gap-4 justify-end">
-        <button className="border border-gray-500 px-5 rounded-sm text-[12px] font-medium ">
-          Late:{lateCount}
-        </button>
-        <button className="border border-gray-500 px-5 rounded-sm text-[12px] font-medium ">
-          Absent:{absentCount}
-        </button>
-        <button className="border border-gray-500 px-5 rounded-sm text-[12px] font-medium ">
-          Half Day:{halfCount}
-        </button>
-      </div>
-      <div className="overflow-y-auto max-h-[370px] border border-gray-300 rounded-md mt-3">
-        <table className="min-w-full border-collapse border border-gray-300 ">
-          <thead className="bg-[#D9D9D9] sticky top-0 z-10">
-            <tr>
-              <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
-                Date
-              </th>
-              <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
-                ClockIn
-              </th>
-              <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
-              ClockOut
-              </th>
-              <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
+       <div className="overflow-auto mt-10 px-4 max-h-[400px]">
+      <table className="w-full border-collapse">
+        <thead className="bg-[#D9D9D9] sticky top-0 z-10">
+          <tr>
+            <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
+              NO
+            </th>
+            <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
+              Name
+            </th>
+            <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
+              Date
+            </th>
+            <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
+              PunchIn
+            </th>
+            <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
+              PunchOut
+            </th>
+            <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
+              Production
+            </th>
+            <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
               Status
-              </th>
-              <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
-                Production
-              </th>
-              <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
-                Work Status
-              </th>
+            </th>
+            <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
+              IPAddress
+            </th>
+            <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
+              WorkStatus
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {attendance.map((users, i) => (
+            <tr key={i} className="hover:bg-gray-100 text-[13px] text-center">
+              <td className="border border-gray-400 px-2 py-2">{i + 1}</td>
+              <td className="border border-gray-400 px-2 py-2">
+                {users?.user_id?.name}
+              </td>
+              <td className="border border-gray-400 px-2 py-2">
+                {moment(users.date).format("MMM Do, YYYY")}
+              </td>
+              <td className="border border-gray-400 px-2 py-2">
+                {users.punchIn
+                  ? moment(users.punchIn).format("HH:mm")
+                  : "Punch-In Not Done"}
+              </td>
+              <td className="border border-gray-400 px-2 py-2">
+                {users.punchOut
+                  ? moment(users.punchOut).format("HH:mm")
+                  : "Punch-Out Not Done"}
+              </td>
+              <td className="border border-gray-400 px-2 py-2">
+                {users.workingTime
+                  ? moment
+                      .utc(users.workingTime * 60 * 1000)
+                      .format("H [hr] m [mins]")
+                  : "0 hr 0 mins"}
+              </td>
+              <td className="border border-gray-400 px-2 py-2">
+                {users.status}
+              </td>
+              <td className="border border-gray-400 px-2 py-2">{users.ip}</td>
+              <td className="border border-gray-400 px-2 py-2">
+                {users.workStatus}
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {attendance.map((item, index) => (
-              <tr key={index} className="text-[13px] text-gray-500">
-                <td className="border border-gray-300 px-4 py-2 text-center">
-                  {moment(item?.currentDate).format("YYYY-MM-DD")}
-                </td>
-                <td className="border border-gray-300 px-4 py-2 text-center">
-                  {moment(item?.firstPunchIn).format("HH:mm")}
-                </td>
-                <td className="border border-gray-300 px-4 py-2 text-center">
-                  {moment(item?.punchOut ? item?.punchOut: "0").format("HH:mm")}
-                </td>
-                <td className="border border-gray-300 px-4 py-2 text-center">
-                  {item?.status}
-                </td>
-                <td className="border border-gray-300 px-4 py-2 text-center">
-                {moment.utc(item?.workingTime * 60 * 1000).format("H [hr] m [mins]")}
-                </td>
-                <td className="border border-gray-300 px-4 py-2 text-center">
-                  {item?.workStatus}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
+    </div>
     </div>
   );
 }

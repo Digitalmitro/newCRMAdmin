@@ -17,7 +17,7 @@ import { MdDelete } from "react-icons/md";
     const fetchData = async (page) => {
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/transfer/user?page=${page}&limit=${limit}`,
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/transfer/all?page=${page}&limit=${limit}`,
         {
           method: "GET",
           headers: {

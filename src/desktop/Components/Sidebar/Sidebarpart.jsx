@@ -9,6 +9,7 @@ import sales from "../../../assets/desktop/sales.svg";
 import arrow from "../../../assets/desktop/arrow.svg";
 import edit from "../../../assets/desktop/edit.svg";
 import logo from "../../../assets/desktop/logo.svg";
+import { BiStreetView } from "react-icons/bi";
 import { useAuth } from "../../../context/authContext";
 import { useEffect, useState } from "react";
 
@@ -69,52 +70,60 @@ function Sidebarpart() {
             </div>
           </Link>
           <Link to="/" className="flex items-center gap-2 p-2 ">
-            <div className="flex flex-col items-center">
-              <img src={home} alt="" className="h-[40px] w-[40px]" />
+            <div className="flex flex-col  items-center">
+              <img src={home} alt="" className="h-[25px] w-[25px]" />
               <p className="text-[12px] font-semibold">Home</p>
             </div>
           </Link>
           <Link to="/attendance" className="flex items-center gap-2 p-2 ">
-            <div className="flex flex-col items-center">
-              <img src={attendence} alt="" className="h-[30px] w-[30px]" />
+            <div className="flex flex-col   items-center">
+              <img src={attendence} alt="" className="h-[20px] w-[20px]" />
               <p className="text-[12px] font-semibold">Attendance</p>
             </div>
           </Link>
           <Link to="/projects" className="flex items-center gap-2 p-2 ">
-            <div className="flex flex-col items-center">
-              <img src={book} alt="" className="h-[35px] w-[35px]" />
+            <div className="flex flex-col  items-center">
+              <img src={book} alt="" className="h-[20px] w-[20px]" />
               <p className="text-[12px] font-semibold">Projects</p>
             </div>
           </Link>
           <Link to="/callbacklist" className="flex items-center gap-2 p-2 ">
             <div className="flex flex-col items-center">
-              <img src={calls} alt="" className="h-[30px] w-[30px]" />
+              <img src={calls} alt="" className="h-[25px] w-[25px]" />
               <p className="text-[12px] font-semibold">Callback</p>
             </div>
           </Link>
           <Link to="/transferlist" className="flex items-center gap-2 p-2">
-            <div className="flex flex-col items-center">
-              <img src={bidirection} alt="" className="h-[30px] w-[30px]" />
+            <div className="flex flex-col  items-center">
+              <img src={bidirection} alt="" className="h-[20px] w-[20px]" />
               <p className="text-[12px] font-semibold">Transfer</p>
             </div>
           </Link>
           <Link to="/saleslist" className="flex items-center gap-2 p-2">
-            <div className="flex flex-col items-center">
-              <img src={sales} alt="" className="h-[30px] w-[30px]" />
+            <div className="flex flex-col  items-center">
+              <img src={sales} alt="" className="h-[25px] w-[25px]" />
               <p className="text-[12px] font-semibold">Sales</p>
             </div>
           </Link>
-          <Link to="/notes" className="flex items-center gap-2 p-2 ">
-            <div className="flex flex-col items-center">
-              <img src={notes} alt="" className="h-[35px] w-[35px]" />
-              <p className="text-[12px] font-semibold">Notes</p>
+          <Link to="/employee" className="flex items-center gap-2 p-2 ">
+            <div className="flex space-x-2 flex-col   items-center">
+            <BiStreetView size={28}/>
+              <p className="text-[12px] font-semibold text-center">Activity </p>
             </div>
           </Link>
-          <div className="flex flex-col items-center">
-            <p className=" rounded border items-center  flex justify-center w-10  text-2xl font-medium text-white bg-orange-600">
-              {userData?.name?.charAt(0)}
-            </p>
-          </div>
+          <Link to="/employee" className="flex items-center gap-2 p-2 ">
+            <div className="flex space-x-2 flex-col   items-center">
+              <img src={notes} alt="" className="h-[20px] w-[20px]" />
+              <p className="text-[12px] font-semibold">Concern</p>
+            </div>
+          </Link>
+          <Link to="/employee" className="flex items-center gap-2 p-2 ">
+            <div className="flex space-x-2  flex-col items-center">
+              <img src={notes} alt="" className="h-[20px] w-[20px]" />
+              <p className="text-[12px] font-semibold">Notifications </p>
+            </div>
+          </Link>
+        
         </nav>
       </div>
 

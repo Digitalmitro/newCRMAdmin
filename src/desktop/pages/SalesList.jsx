@@ -14,7 +14,7 @@ function SalesList() {
       const token = localStorage.getItem("token");
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_API}/sale/user?page=${currentPage}&limit=${limit}`,
+          `${import.meta.env.VITE_BACKEND_API}/sale/all?page=${currentPage}&limit=${limit}`,
           {
             method: "GET",
             headers: {
@@ -71,12 +71,7 @@ function SalesList() {
     <div className=" p-4">
       <div className="border-b border-gray-300 p-4 flex justify-between">
         <h2 className="text-[15px] font-medium pb-2">View Sales</h2>
-        <button
-          className="border  border-orange-500 text-[12px] py-0.5 text-orange-500 px-2 rounded cursor-pointer"
-          onClick={handleNavigate}
-        >
-          Create Sale
-        </button>
+
       </div>
       <div className="pt-6 flex gap-4 justify-start">
         <button className="border px-4 rounded text-[12px] font-medium pt-1 pb-1">
@@ -94,6 +89,7 @@ function SalesList() {
       </div>
       <div className="overflow-x-auto p-4 mt-4">
         <table className="min-w-full border-collapse border border-gray-300">
+          
           <thead>
             <tr className="bg-[#D9D9D9] ">
               <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
@@ -103,10 +99,10 @@ function SalesList() {
               Name
               </th>
               <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
-              Email
+              Phone
               </th>
               <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
-              Phone
+              Email
               </th>
               <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
                 Domain Name
@@ -134,7 +130,7 @@ function SalesList() {
                 <td className="border border-gray-300 px-4 py-2 text-center">
                   {item.domainName}
                 </td>
-                <td className="border space-x-2  border-gray-300 px-4 py-2 text-center">
+                <td className="border space-x-2  border-gray-300  text-center">
                 <button className="border border-orange-500 text-[12px] py-1 text-orange-500 px-2 rounded cursor-pointer" onClick={()=>{handleView((item))}}>
                   <FaEye />
                   </button>

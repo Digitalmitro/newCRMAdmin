@@ -3,40 +3,51 @@ import calls from "../../assets/desktop/calls.svg";
 import sales from "../../assets/desktop/saleshome.svg";
 import project from "../../assets/desktop/projectshome.svg";
 import transfer from "../../assets/desktop/transferhome.svg";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../context/authContext";
 import { useEffect, useState } from "react";
 import moment from "moment";
-function Home() {
+function EmployeeDashboard() {
   const [dates,setDates]=useState([])
   const {fetchAttendance}=useAuth()
-  const navigate=useNavigate()
+  // const location=useLocation()
+  // console.log(location.state)
+  const {id}=useParams()
+  console.log("id",id)
+  const navigate=useNavigate(id)
   const handleAttendaneList=()=>{
-    navigate("/attendance")
+    navigate(`/employeeAttendance/${id}`)
   }
   const handleCallback=()=>{
-    navigate("/callbacklist")
+    navigate(`/employeeCallback/${id}`)
   }
   const handleSales=()=>{
-    navigate("/saleslist")
+    navigate(`/employeeSales/${id}`)
   }
   const handleTransfer=()=>{
-    navigate("/transferlist")
+    navigate(`/employeeTransfer/${id}`)
 
   }
 
-  const months = dates.map(items => moment(items?.currentDate).format("MMMM"));
-  
-  useEffect(()=>{
-    const getData=async()=>{
-      const data=await fetchAttendance("this_month")
-      if(data){
-        
-        setDates(data?.data)
+  const singleEmployee=async()=>{  
+      try{
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_API}/attendance/employeesdashboard/${id}`,{
+          headers:{
+            'Content-Type':'application/json',
+          }
+        });
+        if(res.ok){
+          const data=await res.json()
+          setDates(data)
+        }
+      }catch(err){
+        console.log(err)
       }
-    }
-    getData()
-  },[])
+  }
+useEffect(()=>{
+  singleEmployee()
+},[])
+
   return (
     <div className="w-full">
       
@@ -45,20 +56,20 @@ function Home() {
         <div className="p-4 border rounded-md text-center h-[150px] w-full flex flex-col justify-center items-center cursor-pointer" onClick={handleAttendaneList}>
           <img src={attendence} alt="" className="w-[50px] h-[50px]" />
           <p className="flex flex-col p-2 text-[12px]">
-            Attendee List: {months[0]}
+            Attendee List: {dates?.attendance}
           </p>
         </div>
         <div className="p-4 border rounded-md text-center h-[150px] w-full flex flex-col justify-center items-center cursor-pointer" onClick={handleCallback}>
           <img src={calls} alt="" className="w-[50px] h-[50px]" />
-          <p className="flex flex-col p-2 text-[12px]">All Callback</p>
+          <p className="flex flex-col p-2 text-[12px]">All Callback: {dates?.callback}</p>
         </div>
         <div className="p-4 border rounded-md text-center h-[150px] w-full flex flex-col justify-center items-center cursor-pointer" onClick={handleSales}>
           <img src={sales} alt="" className="w-[50px] h-[50px]" />
-          <p className="flex flex-col p-2 text-[12px]">All Sales</p>
+          <p className="flex flex-col p-2 text-[12px]">All Sales: {dates?.sale}</p>
         </div>
         <div className="p-4 border rounded-md text-center h-[150px] w-full flex flex-col justify-center items-center cursor-pointer" onClick={handleTransfer}>
           <img src={transfer} alt="" className="w-[50px] h-[50px]" />
-          <p className="flex flex-col p-2 text-[12px]"> All Transfer</p>
+          <p className="flex flex-col p-2 text-[12px]"> All Transfer: {dates?.transfer}</p>
         </div>
         <div className="p-4 border rounded-md text-center h-[150px] w-full flex flex-col justify-center items-center cursor-pointer" >
           <img src={project} alt="" className="w-[50px] h-[50px]" />
@@ -69,4 +80,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default EmployeeDashboard;
