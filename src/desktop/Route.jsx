@@ -25,6 +25,7 @@ import EmployeeAttendance from "../desktop/pages/employee/EmployeeAttendance"
 import EmployeeCallback from "./pages/employee/EmployeeCallback"
 import EmployeeSales from "./pages/employee/EmployeeSales"
 import EmployeeTransfer from "./pages/employee/EmployeeTransfer"
+import Concern from "./pages/Concern";
 
 function DesktopRouting() {
   return (
@@ -52,6 +53,8 @@ function DesktopRouting() {
                     <Route path="/callbacklist" element={<CallbackList />} />
                     <Route path="/transferlist" element={<TransferList />} />
                     <Route path="/saleslist" element={<SalesList />} /> 
+                    <Route path="/concern" element={<Concern />} /> 
+
                     {/* <Route path="/notification" element={<NotificationPage/>}/> */}
                     <Route path="/addCoworker" element={<AddCoworkers/>}/>
                     <Route path="/addCoworker" element={<CreateChannel/>}/>

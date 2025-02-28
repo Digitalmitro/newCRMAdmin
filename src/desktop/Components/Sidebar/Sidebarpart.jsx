@@ -111,7 +111,7 @@ function Sidebarpart() {
               <p className="text-[12px] font-semibold text-center">Activity </p>
             </div>
           </Link>
-          <Link to="/employee" className="flex items-center gap-2 p-2 ">
+          <Link to="/concern" className="flex items-center gap-2 p-2 ">
             <div className="flex space-x-2 flex-col   items-center">
               <img src={notes} alt="" className="h-[20px] w-[20px]" />
               <p className="text-[12px] font-semibold">Concern</p>
