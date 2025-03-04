@@ -48,7 +48,7 @@ function EmployeeCallback() {
             <th className="px-12 border border-gray-300">Comments</th>
             <th className="px-2 border border-gray-300">Budget</th>
             <th className="px-6 border border-gray-300">Created Date</th>
-            <th className="px-2 border border-gray-300">Action</th>
+            {/* <th className="px-2 border border-gray-300">Action</th> */}
           </tr>
         </thead>
         <tbody className="bg-gray-100 text-gray-700 text-[13px]  overflow-y-auto overflow-x-auto">
@@ -68,11 +68,11 @@ function EmployeeCallback() {
                 <td className="p-2 border border-gray-300">
                   {data?.createdDate}
                 </td>
-                <td className=" border border-gray-300">
+                {/* <td className=" border border-gray-300">
                   <button className="bg-blue-500 text-white px-2 py-1 rounded">
                     Edit
                   </button>
-                </td>
+                </td> */}
               </tr>
             ))
           // ) : (

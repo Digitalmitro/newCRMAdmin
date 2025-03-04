@@ -85,16 +85,18 @@ function UpdateEmpDetails() {
             className="w-full px-3 py-2 border rounded-md outline-none border-gray-300"
           />
         </div>
-        <div>
-          <label className="block text-gray-600 mb-1">Alice Name</label>
-          <input
-            name="aliceName"
-            type="text"
-            value={data?.aliceName}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border rounded-md outline-none border-gray-300"
-          />
-        </div>
+        <div className="mb-4">
+        <label className="block text-gray-600 mb-1">Employee Type</label>
+        <select
+          className="w-full px-3 py-2 border rounded-md outline-none border-gray-300"
+          value={data?.type}
+          name="type"
+          onChange={handleChange} // Added this
+        >
+          <option value="Night">Night</option>
+          <option value="Day">Day</option>
+        </select>
+      </div>
       </div>
 
       <div className="mb-4">
@@ -130,18 +132,7 @@ function UpdateEmpDetails() {
         </div>
       </div>
 
-      <div className="mb-4">
-        <label className="block text-gray-600 mb-1">Employee Type</label>
-        <select
-          className="w-1/2 px-3 py-2 border rounded-md outline-none border-gray-300"
-          value={data?.type}
-          name="type"
-          onChange={handleChange} // Added this
-        >
-          <option value="Night">Night</option>
-          <option value="Day">Day</option>
-        </select>
-      </div>
+      
 
       <div className="flex gap-4">
         <button
