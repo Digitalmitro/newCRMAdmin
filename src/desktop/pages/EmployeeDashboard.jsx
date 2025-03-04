@@ -13,7 +13,7 @@ function EmployeeDashboard() {
   // const location=useLocation()
   // console.log(location.state)
   const {id}=useParams()
-  console.log("id",id)
+ 
   const navigate=useNavigate(id)
   const handleAttendaneList=()=>{
     navigate(`/employeeAttendance/${id}`)

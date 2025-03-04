@@ -19,7 +19,7 @@ function EmployeeCallback() {
 
       if (response.ok) {
         const data = await response.json();
-        console.log("User transfer:", data);
+
         setTransfer(data?.transfer);
       } else {
         console.error("Failed to fetch transfer:", response.statusText);
@@ -32,7 +32,7 @@ function EmployeeCallback() {
   useEffect(() => {
     fetchUsertransfer(id);
   }, []);
-  console.log("this",transfer)
+
   return (
     <div className=" w-[980px] h-[450px] overflow-auto mx-2 mt-8 px-4">
       <table className="w-full border border-gray-300 shadow-md rounded-lg">

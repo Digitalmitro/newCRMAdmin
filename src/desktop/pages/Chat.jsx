@@ -19,7 +19,7 @@ const Chat = () => {
   const user = location.state;
   const receiverId = user?.id;
   const selectedUser = location?.state?.selectedUsers;
-  // console.log(selectedUser);
+ 
   const { userData } = useAuth();
   const senderId = userData?.userId;
   const [isOnline, setIsOnline] = useState(false);

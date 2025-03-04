@@ -64,7 +64,7 @@ function EmployeesActivity() {
         },
       }
     );
-    console.log(response);
+  
     allEmployees();
   };
 
@@ -106,7 +106,7 @@ function EmployeesActivity() {
       }
 
       const data = await res.json();
-      console.log("Success:", data);
+     
 
       setNewEmp({
         name: "",

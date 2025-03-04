@@ -30,7 +30,7 @@ function CallbackList() {
 
       if (response.ok) {
         const responseData = await response.json();
-        console.log(responseData?.data)
+       
         setData(responseData?.data || []);
         setTotalPages(responseData?.totalPages || 1); // Ensure totalPages is updated
       }
@@ -55,7 +55,7 @@ function CallbackList() {
         }
       );
       if (response.ok) {
-        console.log("Deleted successfully");
+        
         setData((prevData) => prevData.filter((item) => item._id !== id));
       } else {
         console.error("Failed to delete");

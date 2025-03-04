@@ -27,7 +27,7 @@ function Login() {
         { email, password },
         { withCredentials: true }
       );
-      console.log("Login Response", response?.data);
+      
 
       if (response?.data.success === true) {
         setOtpSent(true);
@@ -61,7 +61,7 @@ function Login() {
         { email, otp },
         { withCredentials: true }
       );
-      console.log("OTP Verified", response?.data);
+    
       const token = response?.data.token;
       setToken(token);
       localStorage.setItem("admin", JSON.stringify(response?.data.user));

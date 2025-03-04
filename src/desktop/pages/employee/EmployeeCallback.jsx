@@ -19,7 +19,7 @@ function EmployeeCallback() {
 
       if (response.ok) {
         const data = await response.json();
-        console.log("User Callbacks:", data?.callback);
+      
         setCallback(data?.callback);
       } else {
         console.error("Failed to fetch callbacks:", response.statusText);

@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
           if (response.ok) {
             const data = await response.json();
             const filteredConcerns = data?.concerns?.filter(concern => concern.concernType === arg);
-            console.log(filteredConcerns);
+          
             return filteredConcerns;
           } else {
             console.error("Failed to fetch concerns");

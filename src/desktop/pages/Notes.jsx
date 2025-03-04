@@ -27,7 +27,7 @@ export default function NotesPage() {
       setLoading(false);
     }
   };
-console.log(notes)
+
   // Save notes
   const handleSave = async () => {
     if (!token) {

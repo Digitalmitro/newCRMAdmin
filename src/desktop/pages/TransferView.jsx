@@ -41,7 +41,7 @@ const callbackdata=location?.state?.item;
       });
   
       if (response.ok) {
-        console.log("Callback updated successfully");
+      
       navigate("/transferlist"); 
 
        

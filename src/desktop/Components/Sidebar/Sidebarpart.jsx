@@ -46,7 +46,7 @@ function Sidebarpart() {
         id,
       },
     });
-    // console.log(name,id)
+    
   };
   const handleChannel = () => {
     navigate("/create-channel");

@@ -40,12 +40,7 @@ const callbackdata=location?.state?.item;
         body: JSON.stringify(callback)
       });
   
-      if (response.ok) {
-        console.log("Callback updated successfully");
-        
-      } else {
-        console.error("Failed to update callback");
-      }
+    
       navigate("/saleslist");
     } catch (error) {
       console.error("Error updating callback:", error);

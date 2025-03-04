@@ -5,7 +5,7 @@ function CallbackView() {
 const navigate=useNavigate()
 const location=useLocation()
 const callbackdata=location?.state?.item;
-// console.log(callbackdata)
+
 
   const [callback,setCallback]=useState({
     name:callbackdata?.name,
@@ -41,7 +41,7 @@ const callbackdata=location?.state?.item;
       });
   
       if (response.ok) {
-        console.log("Callback updated successfully");
+    
         navigate("/callbacklist"); 
       } else {
         console.error("Failed to update callback");

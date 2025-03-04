@@ -8,7 +8,7 @@ function Attendance() {
 
   const fetchAttendanceData = async () => {
     const response = await allUsersAttendance();
-    console.log(response);
+
     setAttendance(response);
   };
 

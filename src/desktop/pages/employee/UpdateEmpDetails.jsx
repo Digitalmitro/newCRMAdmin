@@ -11,7 +11,7 @@ function UpdateEmpDetails() {
     type: "",
   });
   const { id } = useParams();
-  console.log("Employee ID:", id);
+
   const token = localStorage.getItem("token");
   const getDetails = async () => {
     const response = await fetch(
@@ -25,7 +25,7 @@ function UpdateEmpDetails() {
     );
     if (response.ok) {
       const data = await response.json();
-      console.log(data);
+     
       setData(data);
     }
   };
@@ -59,7 +59,7 @@ function UpdateEmpDetails() {
       );
       if (response.ok) {
         const data = await response.json();
-        console.log(data);
+       
       } else {
         console.log("error in update activity details");
       }

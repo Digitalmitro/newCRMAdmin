@@ -27,7 +27,7 @@ function SalesList() {
           const data = await response.json();
           
           setSales(data?.data || []);
-          console.log(data?.data)
+
           setTotalPages(data.totalPages || 1);
         }
       } catch (error) {
@@ -43,7 +43,7 @@ function SalesList() {
         method: "DELETE",
       });
       if (response.ok) {
-        console.log("Deleted successfully");
+   
         setSales((prevSales) => prevSales.filter((item) => item._id !== id));
       } else {
         console.error("Failed to delete");

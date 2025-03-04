@@ -29,7 +29,7 @@ const ChannelChat = () => {
   const handleShare = () => {
     setModal(true);
   };
-  console.log(channelInfo);
+
 
   const fetchChannelsInfo = async () => {
     try {

@@ -40,7 +40,7 @@ import { MdDelete } from "react-icons/md";
           method: "DELETE",
         });
         if (response.ok) {
-          console.log("Deleted successfully");
+       
           setData((prevSales) => prevSales.filter((item) => item._id !== id));
         } else {
           console.error("Failed to delete");
