@@ -8,7 +8,7 @@ function SalesList() {
   const [sales,setSales]=useState([])
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const limit = 5;
+  const limit = 25;
   useEffect(() => {
     const fetchSalesList = async () => {
       const token = localStorage.getItem("token");
@@ -68,43 +68,30 @@ function SalesList() {
     navigate("/sales");
   };
   return (
-    <div className=" p-4">
-      <div className="border-b border-gray-300 p-4 flex justify-between">
+    <div className="p-4">
+      <div className=" p-4 flex justify-between">
         <h2 className="text-[15px] font-medium pb-2">View Sales</h2>
 
       </div>
-      <div className="pt-6 flex gap-4 justify-start">
-        <button className="border px-4 rounded text-[12px] font-medium pt-1 pb-1">
-          Select Month
-        </button>
-        <button className="border px-4 rounded text-[12px] font-medium pt-1 pb-1">
-          Select Year
-        </button>
-        <button className="border px-4 rounded text-[12px] font-medium pt-1 pb-1">
-          Select Date
-        </button>
-        <button className="border px-4 rounded text-[12px] font-medium pt-1 pb-1">
-          Select Date
-        </button>
-      </div>
-      <div className="overflow-x-auto p-4 mt-4">
+      
+      <div className="overflow-x-auto mt-4 w-[970px] h-[400px]">
         <table className="min-w-full border-collapse border border-gray-300">
           
           <thead>
             <tr className="bg-[#D9D9D9] ">
               <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
-              Created Date
+              Created_Date
               </th>
-              <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
+              <th className="border border-gray-400 px-2 py-2 text-[15px] font-medium pt-4 pb-4">
               Name
               </th>
-              <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
+              <th className="border border-gray-400 px-2 py-2 text-[15px] font-medium pt-4 pb-4">
               Phone
               </th>
-              <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
+              <th className="border border-gray-400 px-2 py-2 text-[15px] font-medium pt-4 pb-4">
               Email
               </th>
-              <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
+              <th className="border border-gray-400 px-2 py-2 text-[15px] font-medium pt-4 pb-4">
                 Domain Name
               </th>
               <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">

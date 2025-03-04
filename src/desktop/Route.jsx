@@ -26,6 +26,7 @@ import EmployeeCallback from "./pages/employee/EmployeeCallback"
 import EmployeeSales from "./pages/employee/EmployeeSales"
 import EmployeeTransfer from "./pages/employee/EmployeeTransfer"
 import Concern from "./pages/Concern";
+import UpdateEmpDetails from "./pages/employee/UpdateEmpDetails";
 
 function DesktopRouting() {
   return (
@@ -69,8 +70,7 @@ function DesktopRouting() {
                     <Route path="/employeeCallback/:id" element={<EmployeeCallback/>}/>
                     <Route path="/employeeSales/:id" element={<EmployeeSales/>}/>
                     <Route path="/employeeTransfer/:id" element={<EmployeeTransfer/>}/>
-
-
+                    <Route path="/updateEmpDetails/:id" element={<UpdateEmpDetails/>}/>
                   </Routes>
                 </div>
               </div>

@@ -1,12 +1,11 @@
-import profile from "../../assets/desktop/profileIcon.svg";
-import edit from "../../assets/desktop/edit.svg";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/authContext";
 import moment from "moment";
+import { useAuth } from "../../context/authContext";
+
 function Attendance() {
   const { allUsersAttendance } = useAuth();
   const [attendance, setAttendance] = useState([]);
+
   const fetchAttendanceData = async () => {
     const response = await allUsersAttendance();
     console.log(response);
@@ -18,77 +17,86 @@ function Attendance() {
   }, []);
 
   return (
-    <div className="overflow-auto mt-10 px-4 max-h-[450px]">
-      <table className="w-full border-collapse">
-        <thead className="bg-[#D9D9D9] sticky top-0 z-10">
-          <tr>
-            <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
-              NO
-            </th>
-            <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
-              Name
-            </th>
-            <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
-              Date
-            </th>
-            <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
-              PunchIn
-            </th>
-            <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
-              PunchOut
-            </th>
-            <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
-              Production
-            </th>
-            <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
-              Status
-            </th>
-            <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
-              IPAddress
-            </th>
-            <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
-              WorkStatus
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {attendance.map((users, i) => (
-            <tr key={i} className="hover:bg-gray-100 text-[13px] text-center">
-              <td className="border border-gray-400 px-2 py-2">{i + 1}</td>
-              <td className="border border-gray-400 px-2 py-2">
-                {users?.user_id?.name}
-              </td>
-              <td className="border border-gray-400 px-2 py-2">
-                {moment(users.date).format("MMM Do, YYYY")}
-              </td>
-              <td className="border border-gray-400 px-2 py-2">
-                {users.punchIn
-                  ? moment(users.firstPunchIn).format("HH:mm")
-                  : "Punch-In Not Done"}
-              </td>
-              <td className="border border-gray-400 px-2 py-2">
-                {users.punchOut
-                  ? moment(users.punchOut).format("HH:mm")
-                  : "Punch-Out Not Done"}
-              </td>
-              <td className="border border-gray-400 px-2 py-2">
-                {users.workingTime
-                  ? moment
-                      .utc(users.workingTime * 60 * 1000)
-                      .format("H [hr] m [mins]")
-                  : "0 hr 0 mins"}
-              </td>
-              <td className="border border-gray-400 px-2 py-2">
-                {users.status}
-              </td>
-              <td className="border border-gray-400 px-2 py-2">{users.ip}</td>
-              <td className="border border-gray-400 px-2 py-2">
-                {users.workStatus}
-              </td>
+    <div className="mt-10 px-4">
+      <div className="overflow-auto max-h-[450px] border border-gray-300 shadow-lg rounded-lg">
+        <table className="w-full border-collapse">
+          {/* Table Header */}
+          <thead className="bg-orange-500 text-white text-[14px] sticky top-0 z-10">
+            <tr>
+              {[
+                "NO",
+                "Name",
+                "Date",
+                "Punch In",
+                "Punch Out",
+                "Production",
+                "Status",
+                "IP Address",
+                "Work Status",
+              ].map((heading, index) => (
+                <th
+                  key={index}
+                  className="border border-gray-400 px-4 py-3 font-semibold"
+                >
+                  {heading}
+                </th>
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          {/* Table Body */}
+          <tbody className="text-gray-700 text-[13px]">
+            {attendance?.map((user, i) => (
+              <tr
+                key={i}
+                className={`text-center ${
+                  i % 2 === 0 ? "bg-gray-50" : "bg-white"
+                } hover:bg-orange-100 transition-all duration-200`}
+              >
+                <td className="border border-gray-300 px-3 py-2">{i + 1}</td>
+                <td className="border border-gray-300 px-3 py-2 font-medium">
+                  {user?.user_id?.name || "N/A"}
+                </td>
+                <td className="border border-gray-300 px-3 py-2">
+                  {moment(user.date).format("MMM Do, YYYY")}
+                </td>
+                <td className="border border-gray-300 px-3 py-2">
+                  {user.punchIn
+                    ? moment(user.firstPunchIn).format("HH:mm")
+                    : "Clock In Not Done"}
+                </td>
+                <td className="border border-gray-300 px-3 py-2">
+                  {user.punchOut
+                    ? moment(user.punchOut).format("HH:mm")
+                    : " Clock Out Not Done"}
+                </td>
+                <td className="border border-gray-300 px-3 py-2">
+                  {user.workingTime
+                    ? moment
+                        .utc(user.workingTime * 60 * 1000)
+                        .format("H [hr] m [mins]")
+                    : "0 hr 0 mins"}
+                </td>
+                <td
+                  className={`border border-gray-300 px-3 py-2 font-medium ${
+                    user.status === "Present"
+                      ? "text-green-600"
+                      : user.status === "Absent"
+                      ? "text-red-600"
+                      : "text-gray-600"
+                  }`}
+                >
+                  {user.status}
+                </td>
+                <td className="border border-gray-300 px-3 py-2">{user.ip}</td>
+                <td className="border border-gray-300 px-3 py-2">
+                  {user.workStatus}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

@@ -35,6 +35,12 @@ function EmployeesActivity() {
     navigate(`/employeeDashboard/${id}`);
     // navigate("/employeeDashboard/",{state:{id}});
   };
+
+  const handleEmpDetailsView = (id) => { 
+    navigate(`/updateEmpDetails/${id}`);
+  };
+  
+  
   const handleShift = (e) => {
     const changedShift = e.target.value;
     setShift(changedShift);
@@ -197,7 +203,7 @@ function EmployeesActivity() {
                   >
                     <FaEye />
                   </button>
-                  <button className=" border border-blue-500 text-[12px] py-1 text-blue-500 px-2 rounded cursor-pointer">
+                  <button className=" border border-blue-500 text-[12px] py-1 text-blue-500 px-2 rounded cursor-pointer" onClick={()=>handleEmpDetailsView(data?._id)}>
                     <FaEdit />
                   </button>
                   <button className="border border-red-500 text-[12px] py-1 text-red-500 px-2 rounded cursor-pointer" onClick={()=>handleDelete(data?._id)}>

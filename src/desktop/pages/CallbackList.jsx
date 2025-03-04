@@ -9,7 +9,7 @@ function CallbackList() {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const limit = 4;
+  const limit = 25;
 
   const allCallBack = async () => {
     const token = localStorage.getItem("token");
@@ -82,14 +82,14 @@ function CallbackList() {
 
   return (
     <div className="p-4">
-      <div className="border-b border-gray-300 p-4 flex justify-between">
+      <div className=" p-4">
         <h2 className="text-[15px] font-medium pb-2">View Callback</h2>
         
       </div>
       {/* Table */}
       <div className="overflow-x-auto max-h-[400px]">
-      <div className="">
-      <table className="w-full table-fixed border-collapse border border-gray-300 ">
+      <div className="w-[900px]">
+      <table className="w-full  border-collapse border border-gray-300 ">
         <div className=" ">
           <thead className="sticky top-0 z-10 bg-[#D9D9D9] text-[14px] ">
             <tr>

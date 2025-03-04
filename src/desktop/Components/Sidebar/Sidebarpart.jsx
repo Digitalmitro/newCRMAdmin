@@ -9,6 +9,7 @@ import sales from "../../../assets/desktop/sales.svg";
 import arrow from "../../../assets/desktop/arrow.svg";
 import edit from "../../../assets/desktop/edit.svg";
 import logo from "../../../assets/desktop/logo.svg";
+import { TbBrandDatabricks } from "react-icons/tb";
 import { BiStreetView } from "react-icons/bi";
 import { useAuth } from "../../../context/authContext";
 import { useEffect, useState } from "react";
@@ -113,11 +114,11 @@ function Sidebarpart() {
           </Link>
           <Link to="/concern" className="flex items-center gap-2 p-2 ">
             <div className="flex space-x-2 flex-col   items-center">
-              <img src={notes} alt="" className="h-[20px] w-[20px]" />
+            <TbBrandDatabricks size={23}/>
               <p className="text-[12px] font-semibold">Concern</p>
             </div>
           </Link>
-          <Link to="/employee" className="flex items-center gap-2 p-2 ">
+          <Link to="/" className="flex items-center gap-2 p-2 ">
             <div className="flex space-x-2  flex-col items-center">
               <img src={notes} alt="" className="h-[20px] w-[20px]" />
               <p className="text-[12px] font-semibold">Notifications </p>
@@ -130,7 +131,7 @@ function Sidebarpart() {
       <div className="bg-gray-200 w-[250px] p-4 border border-orange-400">
         <div className="flex justify-between items-center pt-4 mb-4">
           <h2 className="text-[18px] font-medium   flex gap-2">
-            {userData?.name}
+            Admin
             <img src={arrow} alt="" className="w-[8px] pt-1" />
           </h2>
           <img src={edit} alt="" className="w-[10px] h-[10px]" />

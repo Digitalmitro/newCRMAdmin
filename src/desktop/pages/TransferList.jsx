@@ -7,7 +7,7 @@ import { MdDelete } from "react-icons/md";
     const [data, setData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const limit = 5;
+    const limit = 25;
     const navigate = useNavigate();
   
     useEffect(() => {
@@ -64,28 +64,13 @@ import { MdDelete } from "react-icons/md";
       }
   return (
     <div className=" p-4">
-    <div className="border-b border-gray-300 p-4 flex justify-between">
+    <div className=" p-4 flex justify-between">
       <h2 className="text-[15px] font-medium pb-2">View Transfer</h2>
-      <button className="border  border-orange-500 text-[12px] py-0.5 text-orange-500 px-2 rounded cursor-pointer" onClick={handleNavigate}>Create Transfer</button>
-    </div>
-    <div className="pt-6 flex gap-4 justify-start">
-      <button className="border px-4 rounded text-[12px] font-medium pt-1 pb-1">
-        Select Month
-      </button>
-      <button className="border px-4 rounded text-[12px] font-medium pt-1 pb-1">
-        Select Year
-      </button>
-      <button className="border px-4 rounded text-[12px] font-medium pt-1 pb-1">
-        Select Date
-      </button>
-      <button className="border px-4 rounded text-[12px] font-medium pt-1 pb-1">
-        Select Date
-      </button>
     </div>
     {/* Table */}
-    <div className="overflow-x-auto p-4 mt-4">
+    <div className="overflow-x-auto mt-2 w-[950px] h-[400px]">
         <table className="min-w-full border-collapse border border-gray-300">
-          <thead>
+          <thead className="sticky top-0">
             <tr className="bg-[#D9D9D9] text-[14px]">
               <th className="border px-3 py-2">Created Date</th>
               {/* <th className="border px-3 py-2">Created By</th> */}
