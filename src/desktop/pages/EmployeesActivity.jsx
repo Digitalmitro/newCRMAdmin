@@ -163,7 +163,7 @@ function EmployeesActivity() {
           <thead className="bg-gray-200 border-b border-gray-400 sticky top-0">
             <tr className="font-semibold text-center text-[15px] ">
               <th className="border border-gray-300 p-2">Name</th>
-              <th className="border border-gray-300 p-2">Alice Name</th>
+              {/* <th className="border border-gray-300 p-2">Alice Name</th> */}
               <th className="border border-gray-300 p-2">Type</th>
               <th className="border border-gray-300 p-2">Email</th>
               <th className="border border-gray-300 p-2">Phone</th>
@@ -178,9 +178,9 @@ function EmployeesActivity() {
             {filterSearch.reverse().map((data, i) => (
               <tr key={i} className="text-gray-600 text-[14px] text-center">
                 <td className="border border-gray-300 px-2">{data?.name}</td>
-                <td className="border border-gray-300 px-2">
+                {/* <td className="border border-gray-300 px-2">
                   {data?.aliceName}
-                </td>
+                </td> */}
                 <td className="border border-gray-300 px-2">{data?.type}</td>
                 <td className="border border-gray-300 px-2">{data?.email}</td>
                 <td className="border border-gray-300 px-2">{data?.phone}</td>
@@ -248,7 +248,7 @@ function EmployeesActivity() {
                     placeholder="Enter Employee Name"
                   />
                 </div>
-                <div className="mb-3 ">
+                {/* <div className="mb-3 ">
                   <label className="block text-sm font-[500] text-gray-600 text-[15px]">
                     <span className="text-red-500">*</span> Alice Name
                   </label>
@@ -260,7 +260,7 @@ function EmployeesActivity() {
                     onChange={handleChange}
                     placeholder="Enter Alice Name"
                   />
-                </div>
+                </div> */}
               </div>
               <div className="mb-3">
                 <label className="block text-sm text-[15px] font-[500] text-gray-600">
