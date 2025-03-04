@@ -106,6 +106,7 @@ function EmployeesActivity() {
       }
 
       const data = await res.json();
+      alert("Employee Created")
      
 
       setNewEmp({
@@ -177,7 +178,7 @@ function EmployeesActivity() {
             </tr>
           </thead>
           <tbody className="bg-gray-100">
-            {filterSearch.reverse().map((data, i) => (
+            {filterSearch.map((data, i) => (
               <tr key={i} className="text-gray-600 text-[14px] text-center">
                 <td className="border border-gray-300 px-2">{data?.name}</td>
                 {/* <td className="border border-gray-300 px-2">
