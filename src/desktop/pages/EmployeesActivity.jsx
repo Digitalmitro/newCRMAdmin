@@ -36,11 +36,10 @@ function EmployeesActivity() {
     // navigate("/employeeDashboard/",{state:{id}});
   };
 
-  const handleEmpDetailsView = (id) => { 
+  const handleEmpDetailsView = (id) => {
     navigate(`/updateEmpDetails/${id}`);
   };
-  
-  
+
   const handleShift = (e) => {
     const changedShift = e.target.value;
     setShift(changedShift);
@@ -54,17 +53,20 @@ function EmployeesActivity() {
     }
   };
 
-  const handleDelete=async(id)=>{
-    const response=await fetch(`${import.meta.env.VITE_BACKEND_API}/auth/${id}`,{
-      method:"DELETE",
-      headers:{
-          'Content-Type':'application/json',
-          Authorization:`Bearer ${token}`
+  const handleDelete = async (id) => {
+    const response = await fetch(
+      `${import.meta.env.VITE_BACKEND_API}/auth/${id}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       }
-    });
+    );
     console.log(response);
-    allEmployees()
-  }
+    allEmployees();
+  };
 
   const filterSearch = filteredEmployees.filter((emp) =>
     emp.name.toLowerCase().includes(search.toLowerCase())
@@ -84,26 +86,28 @@ function EmployeesActivity() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-   
-  
+
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_API}/auth/admin/create-user`, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(newEmp), 
-      });
-  
+      const res = await fetch(
+        `${import.meta.env.VITE_BACKEND_API}/auth/admin/create-user`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(newEmp),
+        }
+      );
+
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(`Error: ${errorData.message || res.status}`);
       }
-  
+
       const data = await res.json();
       console.log("Success:", data);
-  
+
       setNewEmp({
         name: "",
         aliceName: "",
@@ -112,14 +116,12 @@ function EmployeesActivity() {
         password: "",
         type: "",
       });
-  
+
       setCreateEmpOpen(false);
     } catch (error) {
       console.error("Validation failed:", error);
     }
   };
-  
-
 
   return (
     <div className="p-4">
@@ -203,10 +205,16 @@ function EmployeesActivity() {
                   >
                     <FaEye />
                   </button>
-                  <button className=" border border-blue-500 text-[12px] py-1 text-blue-500 px-2 rounded cursor-pointer" onClick={()=>handleEmpDetailsView(data?._id)}>
+                  <button
+                    className=" border border-blue-500 text-[12px] py-1 text-blue-500 px-2 rounded cursor-pointer"
+                    onClick={() => handleEmpDetailsView(data?._id)}
+                  >
                     <FaEdit />
                   </button>
-                  <button className="border border-red-500 text-[12px] py-1 text-red-500 px-2 rounded cursor-pointer" onClick={()=>handleDelete(data?._id)}>
+                  <button
+                    className="border border-red-500 text-[12px] py-1 text-red-500 px-2 rounded cursor-pointer"
+                    onClick={() => handleDelete(data?._id)}
+                  >
                     <MdDelete />
                   </button>
                 </td>
@@ -246,21 +254,26 @@ function EmployeesActivity() {
                     value={newEmp.name}
                     onChange={handleChange}
                     placeholder="Enter Employee Name"
+                    required
                   />
                 </div>
-                {/* <div className="mb-3 ">
-                  <label className="block text-sm font-[500] text-gray-600 text-[15px]">
-                    <span className="text-red-500">*</span> Alice Name
-                  </label>
-                  <input
-                    type="text"
-                    className="border mt-2 text-gray-800 text-[14px] border-gray-600 px-2 pt-1 pb-1 w-[220px] rounded outline-none"
-                    name="aliceName"
-                    value={newEmp.aliceName}
-                    onChange={handleChange}
-                    placeholder="Enter Alice Name"
-                  />
-                </div> */}
+                <div className="mb-3">
+                <label className="block text-sm text-[15px] font-[500] text-gray-600">
+                  <span className="text-red-500">*</span> Employee Type
+                </label>
+                <select
+                  className="border text-gray-800 text-[14px] mt-2 border-gray-400 px-2 pt-1 pb-1 w-[220px] rounded outline-none"
+                  value={newEmp.type || ""}
+                  id="type"
+                  name="type"
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select Type</option>
+                  <option value="Day">Day</option>
+                  <option value="Night">Night</option>
+                </select>
+              </div>
               </div>
               <div className="mb-3">
                 <label className="block text-sm text-[15px] font-[500] text-gray-600">
@@ -273,6 +286,7 @@ function EmployeesActivity() {
                   placeholder="Enter Email"
                   value={newEmp.email}
                   onChange={handleChange}
+                  required
                 />
               </div>
               <div className="flex gap-4 mb-3">
@@ -287,6 +301,7 @@ function EmployeesActivity() {
                     value={newEmp.phone}
                     onChange={handleChange}
                     placeholder="Enter Phone"
+                    required
                   />
                 </div>
                 <div className="mb-3">
@@ -300,25 +315,9 @@ function EmployeesActivity() {
                     onChange={handleChange}
                     className="border text-gray-800 text-[14px] mt-2 border-gray-400 px-2 w-[220px] pt-1 pb-1 rounded outline-none"
                     placeholder="Enter Password"
+                    required
                   />
                 </div>
-              </div>
-              <div className="mb-3">
-                <label className="block text-sm text-[15px] font-[500] text-gray-600">
-                  <span className="text-red-500">*</span> Employee Type
-                </label>
-                <select
-                  className="border text-gray-800 text-[14px] mt-2 border-gray-400 px-2 pt-1 pb-1 w-1/2 rounded outline-none"
-                  value={newEmp.type ||""}
-                  id="type"
-                  name="type"
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Select Type</option>
-                  <option value="Day">Day</option>
-                  <option value="Night">Night</option>
-                </select>
               </div>
               <div className="flex space-x-4 mt-4">
                 <button
