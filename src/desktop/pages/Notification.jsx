@@ -1,13 +1,5 @@
 import { useEffect, useState } from "react";
 
-const employees = [
-  "Loknath Pandit",
-  "Amit Sharma",
-  "Priya Verma",
-  "Rahul Gupta",
-  "Sonia Mehta",
-];
-
 export default function NotificationSystem() {
   const [emp, setEmp] = useState([]);
   const [selectedEmployees, setSelectedEmployees] = useState([]);
@@ -35,7 +27,7 @@ export default function NotificationSystem() {
     if (selectAll) {
       setSelectedEmployees([]);
     } else {
-      setSelectedEmployees([...employees]);
+      setSelectedEmployees(emp.map((employee) => employee.name));
     }
     setSelectAll(!selectAll);
   };
@@ -48,7 +40,7 @@ export default function NotificationSystem() {
       updatedSelection.push(name);
     }
     setSelectedEmployees(updatedSelection);
-    setSelectAll(updatedSelection.length === employees.length);
+    setSelectAll(updatedSelection.length === emp.length);
   };
 
   const sendNotification = () => {
@@ -72,15 +64,15 @@ export default function NotificationSystem() {
           />
           Select All
         </label>
-        {emp.reverse().map((employee,i) => (
+        {emp.map((employee,i) => (
           <label
             key={i}
             className="flex items-center gap-2 mb-1 cursor-pointer text-[15px] text-gray-600"
           >
             <input
               type="checkbox"
-              checked={selectedEmployees.includes(name)}
-              onChange={() => handleIndividualSelect(name)}
+              checked={selectedEmployees.includes(employee.name)}
+              onChange={() => handleIndividualSelect(employee.name)}
             />
             {employee.name}
           </label>
