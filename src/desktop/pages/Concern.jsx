@@ -31,6 +31,7 @@ function Concern() {
         <th className="p-2 border border-gray-300">Email</th>
         <th className="p-2 border border-gray-300">Date</th>
         <th className="p-2 border border-gray-300">Message</th>
+        <th className="p-2 border border-gray-300">Message Type</th>
         <th className="p-2 border border-gray-300">Status</th>
         <th className="p-2 border border-gray-300">Action</th>
       </tr>
@@ -51,6 +52,7 @@ function Concern() {
             {con?.user_id?.currentDate || con?.ConcernDate}
           </td>
           <td className="p-2 border border-gray-300">{con?.message}</td>
+          <td className="p-2 border border-gray-300">{con?.concernType}</td>
           <td className="p-2 border border-gray-300">{con?.status}</td>
           <td className="p-2 border border-gray-300 space-y-1">
             <button className="bg-green-500 text-white px-2 py-1 rounded">
