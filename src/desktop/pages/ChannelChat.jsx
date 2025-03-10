@@ -130,7 +130,7 @@ const ChannelChat = () => {
       document.getElementById("chatInput").focus();
     }, 0);
   };
-
+console.log(channelInfo)
   return (
     <div className="p-4 w-full flex flex-col h-[500px]">
       {/* Header */}
@@ -150,7 +150,7 @@ const ChannelChat = () => {
           </div>
           <div className="flex items-center space-x-2">
             <IoPeopleSharp />
-            <p className="text[10px]">({channelInfo?.members.length})</p>
+            <p className="text[10px]">({channelInfo?.members?.length})</p>
           </div>
         </div>
         <div className="relative flex">

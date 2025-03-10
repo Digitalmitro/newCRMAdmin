@@ -18,6 +18,7 @@ function Sidebarpart() {
   const { getChannels } = useAuth();
   const [employees, setEmployees] = useState([]);
   const [channels, setChannels] = useState([]);
+  const [unreadMessages, setUnreadMessages] = useState({});
   const { getAllUsers, userData } = useAuth();
   const channel = async () => {
     const data = await getChannels();
@@ -131,7 +132,7 @@ function Sidebarpart() {
       <div className="bg-gray-200 w-[250px] p-4 border border-orange-400">
         <div className="flex justify-between items-center pt-4 mb-4">
           <h2 className="text-[18px] font-medium   flex gap-2">
-            Admin
+            {userData?.name}
             <img src={arrow} alt="" className="w-[8px] pt-1" />
           </h2>
           <img src={edit} alt="" className="w-[10px] h-[10px]" />
@@ -175,32 +176,41 @@ function Sidebarpart() {
           </ul>
         </div>
 
-        {/* Messages Section */}
-        <div className="mb-4">
+         {/* Messages Section */}
+         <div className="mb-4">
           <h3 className="text-[15px] font-bold text-gray-600 flex gap-2">
             Messages <img src={arrow} alt="" className="w-[8px] pt-1" />
           </h3>
           <ul className="mt-2">
-            {employees?.slice(0, 4).map((user, i) => (
-              <li
-                key={i}
-                className="block p-2 text-gray-700 text-[14px] font-medium cursor-pointer"
-                onClick={() => handleChat(user.name, user._id)}
-              >
-                <p className="flex space-x-2">
-                  <span
-                    className="border items-center  flex justify-center w-5 h-5 text-[12px] font-medium text-white"
-                    style={{
-                      backgroundColor: `hsl(${Math.floor(Math.random() * 360)}, 70%, 40%)`,
-                    }}
-                  >
-                    {user?.name?.charAt(0).toUpperCase()}
-                  </span>
-                  <span>{user.name}</span>
-                  <span>{`(1)`}</span>
-                </p>
-              </li>
-            ))}
+            {employees
+              ?.filter((user) => user.lastMessageTime)
+              ?.slice(0, 8)
+              .map((user, i) => (
+                <li
+                  key={i}
+                  className="block p-2 text-gray-700 text-[14px] font-medium cursor-pointer"
+                  onClick={() => handleChat(user.name, user.id)}
+                >
+                  <p className="flex space-x-2">
+                    <span
+                      className="border items-center  flex justify-center w-5 h-5 text-[12px] font-medium text-white"
+                      style={{
+                        backgroundColor: `hsl(${Math.floor(
+                          Math.random() * 360
+                        )}, 70%, 40%)`,
+                      }}
+                    >
+                      {user?.name?.charAt(0).toUpperCase()}
+                    </span>
+                    <span>{user?.name}</span>
+                    {unreadMessages[user.id] > 0 && openChatId !== user.id && (
+                      <span className="text-green-500 font-bold">
+                        ({unreadMessages[user.id]})
+                      </span>
+                    )}
+                  </p>
+                </li>
+              ))}
             <li
               className="block p-2 text-gray-700 text-[15px] cursor-pointer"
               onClick={handleCowrokers}

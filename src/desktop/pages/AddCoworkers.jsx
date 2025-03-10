@@ -25,7 +25,7 @@ function AddCoworkers() {
   const handleCreate=()=>{
     navigate("/chat",{
       state:{
-        name:selectedUsers[0].name,id: selectedUsers[0]._id
+        name:selectedUsers[0].name,id: selectedUsers[0].id
       }
     })
   }

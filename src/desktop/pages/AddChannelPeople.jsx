@@ -114,9 +114,9 @@ function AddChannelPeople() {
         <div className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded shadow-md mt-1 z-10">
           {filteredPeople.map((person) => (
             <div
-              key={person._id}
+              key={person.id}
               className="p-2 cursor-pointer hover:bg-gray-100"
-              onClick={() => handleSelectPerson(person._id, person.name)}
+              onClick={() => handleSelectPerson(person.id, person.name)}
             >
               {person.name}
             </div>
