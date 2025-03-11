@@ -105,8 +105,52 @@ export const AuthProvider = ({ children }) => {
         }
       }
 
+        // admin
+
+    const allUsersAttendance=async()=>{
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/attendance/today`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+    
+            if (response.ok) {
+                const data = await response.json();
+                return data?.data;
+            }
+        } catch (error) {
+            console.error("Error fetching data:", error.message);
+            return null;
+        }
+    }
+
+    const allUsers=async()=>{
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/auth/`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+    
+            if (response.ok) {
+                const data = await response.json();
+                return data;
+            }
+        } catch (error) {
+            console.error("Error fetching data:", error.message);
+            return null;
+        }
+    }
+
+    
+
     return (
-        <AuthContext.Provider value={{ token, allConcerns, setToken,userData, getChannels, fetchAttendance,getAllUsers }}>
+        <AuthContext.Provider value={{ token, allUsers, allUsersAttendance, allConcerns, setToken,userData, getChannels, fetchAttendance,getAllUsers }}>
             {children}
         </AuthContext.Provider>
     );
