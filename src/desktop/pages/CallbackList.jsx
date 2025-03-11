@@ -44,6 +44,7 @@ function CallbackList() {
   }, [currentPage]);
 
   const deleteCallBack = async (id) => {
+    const token = localStorage.getItem("token");
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_API}/callback/${id}`,
@@ -72,6 +73,7 @@ function CallbackList() {
   };
 
   const handleDelete = (id) => {
+    console.log(id)
     if (!id) return;
     deleteCallBack(id);
   };

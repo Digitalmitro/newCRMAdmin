@@ -70,6 +70,7 @@ function Login() {
 
       setTimeout(() => {
         navigate("/");
+        window.location.reload();
       }, 1200);
     } catch (error) {
       console.error("OTP verification failed", error);
