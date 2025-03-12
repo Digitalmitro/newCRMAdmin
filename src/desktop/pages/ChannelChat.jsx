@@ -176,10 +176,10 @@ console.log(channelInfo)
                 className="w-full p-1 mt-8  border border-gray-400 rounded outline-none text-[15px]"
               />
               <div className="flex justify-between">
-                <p className="p-1 bg-gray-200 rounded text-[12px]">
+                {/* <p className="p-1 bg-gray-200 rounded text-[12px]">
                   {channelInfo.inviteLink}
-                </p>
-                <button
+                </p> */}
+                {/* <button
                   className="ml-2 px-2 text-[12px]  pb-0.5 pt-0.5 bg-orange-400 text-white rounded cursor-pointer"
                   onClick={() => {
                     navigator.clipboard.writeText(channelInfo.inviteLink);
@@ -187,7 +187,7 @@ console.log(channelInfo)
                   }}
                 >
                   copy
-                </button>
+                </button> */}
               </div>
               <div className="flex justify-center items-center">
                 <button
