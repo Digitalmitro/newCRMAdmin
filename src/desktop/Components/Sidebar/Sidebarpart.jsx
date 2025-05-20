@@ -143,7 +143,7 @@ function Sidebarpart() {
             Channels <img src={arrow} alt="" className="w-[8px] pt-1" />
           </h3>
           <ul className="mt-2">
-            {channels.map((channel) => (
+            {channels?.map((channel) => (
               <li key={channel._id}>
                 <p
                   className="block p-2 text-gray-700 font-medium text-[14px] cursor-pointer"
