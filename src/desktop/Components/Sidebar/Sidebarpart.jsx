@@ -37,6 +37,11 @@ function Sidebarpart() {
   const handleCowrokers = () => {
     navigate("/addCoworker");
   };
+  const handleCowrokersNotes = () => {
+    navigate("/addCoworker", {
+      state: { from: "/notes" }
+    });
+  };
 
   const navigate = useNavigate();
   const handleChat = (name, id) => {
@@ -46,13 +51,23 @@ function Sidebarpart() {
         id,
       },
     });
-    
+
   };
   const handleChannel = () => {
     navigate("/create-channel");
   };
-  const handleChannelChat = (name, id) => {
-    navigate("/channelchat", {
+  const handleChannelChat = (name, id,description) => {
+    navigate(`/channelchat/${id}`, {
+      state: {
+        name,
+        description,
+        id,
+      },
+    });
+  };
+
+  const handleNotes = (name, id) => {
+    navigate("/notes", {
       state: {
         name,
         id,
@@ -60,6 +75,8 @@ function Sidebarpart() {
     });
   };
 
+  console.log(channels);
+  
   return (
     <div className="  flex ">
       <div className="px-3 pt-2 border border-orange-400">
@@ -108,13 +125,13 @@ function Sidebarpart() {
           </Link>
           <Link to="/employee" className="flex items-center gap-2 p-2 ">
             <div className="flex space-x-2 flex-col   items-center">
-            <BiStreetView size={28}/>
+              <BiStreetView size={28} />
               <p className="text-[12px] font-semibold text-center">Activity </p>
             </div>
           </Link>
           <Link to="/concern" className="flex items-center gap-2 p-2 ">
             <div className="flex space-x-2 flex-col   items-center">
-            <TbBrandDatabricks size={23}/>
+              <TbBrandDatabricks size={23} />
               <p className="text-[12px] font-semibold">Concern</p>
             </div>
           </Link>
@@ -124,7 +141,8 @@ function Sidebarpart() {
               <p className="text-[12px] font-semibold">Notifications </p>
             </div>
           </Link>
-        
+
+
         </nav>
       </div>
 
@@ -147,20 +165,20 @@ function Sidebarpart() {
               <li key={channel._id}>
                 <p
                   className="block p-2 text-gray-700 font-medium text-[14px] cursor-pointer"
-                  onClick={() => handleChannelChat(channel.name, channel._id)}
+                  onClick={() => handleChannelChat(channel.name, channel._id,channel.description)}
                 >
                   <p className="flex space-x-2">
-                  <span
-                    className="border items-center  flex justify-center w-5 h-5 text-[12px] font-medium text-white"
-                    style={{
-                      backgroundColor: `hsl(${Math.floor(Math.random() * 360)}, 70%, 40%)`,
-                    }}
-                  >
-                    {channel?.name?.charAt(0).toUpperCase()}
-                  </span>
-                  <span>{channel.name}</span>
-                </p>
-                  
+                    <span
+                      className="border items-center  flex justify-center w-5 h-5 text-[12px] font-medium text-white"
+                      style={{
+                        backgroundColor: `hsl(${Math.floor(Math.random() * 360)}, 70%, 40%)`,
+                      }}
+                    >
+                      {channel?.name?.charAt(0).toUpperCase()}
+                    </span>
+                    <span>{channel.name}</span>
+                  </p>
+
                 </p>
               </li>
             ))}
@@ -204,6 +222,41 @@ function Sidebarpart() {
             <li
               className="block p-2 text-gray-700 text-[15px] cursor-pointer"
               onClick={handleCowrokers}
+            >
+              + Add Coworker
+            </li>
+          </ul>
+        </div>
+
+        {/* Notes Section */}
+        <div className="mb-4">
+          <h3 className="text-[15px] font-bold text-gray-600 flex gap-2">
+            Notes <img src={arrow} alt="" className="w-[8px] pt-1" />
+          </h3>
+          <ul className="mt-2">
+            {employees?.slice(18, 22).map((user, i) => (
+              <li
+                key={i}
+                className="block p-2 text-gray-700 text-[14px] font-medium cursor-pointer"
+                onClick={() => handleNotes(user.name, user._id)}
+              >
+                <p className="flex space-x-2">
+                  <span
+                    className="border items-center  flex justify-center w-5 h-5 text-[12px] font-medium text-white"
+                    style={{
+                      backgroundColor: `hsl(${Math.floor(Math.random() * 360)}, 70%, 40%)`,
+                    }}
+                  >
+                    {user?.name?.charAt(0).toUpperCase()}
+                  </span>
+                  <span>{user.name}</span>
+                  <span>{`(1)`}</span>
+                </p>
+              </li>
+            ))}
+            <li
+              className="block p-2 text-gray-700 text-[15px] cursor-pointer"
+              onClick={handleCowrokersNotes}
             >
               + Add Coworker
             </li>

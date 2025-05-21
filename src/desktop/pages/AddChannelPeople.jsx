@@ -77,10 +77,12 @@ function AddChannelPeople() {
   };
 
   const handleSelectPerson = (id, name) => {
+    
     if (!selectedPeople.some((p) => p.id === id)) {
       setSelectedPeople([...selectedPeople, { id, name }]);
       setMembers((prevMembers) => [...prevMembers, id]); // Append new id to members array
     }
+
     setSearchTerm("");
     setShowDropdown(false);
   };

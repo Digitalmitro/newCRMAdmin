@@ -1,13 +1,13 @@
-import { createContext, useContext, useState,useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const initialToken =localStorage.getItem("token") 
+    const initialToken = localStorage.getItem("token")
     const [userData, setUserData] = useState([]);
     const [token, setToken] = useState(initialToken);
- 
+
     useEffect(() => {
         if (token) {
             try {
@@ -19,39 +19,39 @@ export const AuthProvider = ({ children }) => {
             }
         } else {
             setUserData(null);
-        }      
+        }
     }, []);
 
-   
-    
 
 
-    const allConcerns = async (arg) => { 
+
+
+    const allConcerns = async (arg) => {
         try {
-          const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/concern/user`, {
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`,
-            }
-          });
-      
-          if (response.ok) {
-            const data = await response.json();
-            const filteredConcerns = data?.concerns?.filter(concern => concern.concernType === arg);
-          
-            return filteredConcerns;
-          } else {
-            console.error("Failed to fetch concerns");
-            return null;
-          }
-        } catch (error) {
-          console.error("Error fetching data:", error.message);
-          return null;
-        }
-      };
-      
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/concern/user`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                }
+            });
 
-    const getAllUsers=async()=>{
+            if (response.ok) {
+                const data = await response.json();
+                const filteredConcerns = data?.concerns?.filter(concern => concern.concernType === arg);
+
+                return filteredConcerns;
+            } else {
+                console.error("Failed to fetch concerns");
+                return null;
+            }
+        } catch (error) {
+            console.error("Error fetching data:", error.message);
+            return null;
+        }
+    };
+
+
+    const getAllUsers = async () => {
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/auth/all`, {
                 method: "GET",
@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }) => {
                     "Content-Type": "application/json",
                 },
             });
-    
+
             if (response.ok) {
                 const data = await response.json();
                 return data?.users;
@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }) => {
             console.error("Error fetching data:", error.message);
             return null;
         }
-    } 
+    }
 
     const fetchAttendance = async (range) => {
         try {
@@ -94,17 +94,22 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const getChannels=async()=>{
-        const response=await fetch(`${import.meta.env.VITE_BACKEND_API}/api/all`)
-        if(response.ok){
-          const data=await response.json();
-          return data
+    const getChannels = async () => {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/api/all`, {
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        })
+        if (response.ok) {
+            const data = await response.json();
+            return data
         }
-      }
+    }
 
-       // admin
+    // admin
 
-    const allUsersAttendance=async()=>{
+    const allUsersAttendance = async () => {
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/attendance/today`, {
                 method: "GET",
@@ -113,7 +118,7 @@ export const AuthProvider = ({ children }) => {
                     "Content-Type": "application/json",
                 },
             });
-    
+
             if (response.ok) {
                 const data = await response.json();
                 return data?.data;
@@ -124,7 +129,7 @@ export const AuthProvider = ({ children }) => {
         }
     }
 
-    const allUsers=async()=>{
+    const allUsers = async () => {
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/auth/`, {
                 method: "GET",
@@ -133,7 +138,7 @@ export const AuthProvider = ({ children }) => {
                     "Content-Type": "application/json",
                 },
             });
-    
+
             if (response.ok) {
                 const data = await response.json();
                 return data;
@@ -144,10 +149,10 @@ export const AuthProvider = ({ children }) => {
         }
     }
 
-    
+
 
     return (
-        <AuthContext.Provider value={{ token, allUsers, allUsersAttendance, allConcerns, setToken,userData, getChannels, fetchAttendance,getAllUsers }}>
+        <AuthContext.Provider value={{ token, allUsers, allUsersAttendance, allConcerns, setToken, userData, getChannels, fetchAttendance, getAllUsers }}>
             {children}
         </AuthContext.Provider>
     );

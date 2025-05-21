@@ -28,6 +28,8 @@ import EmployeeTransfer from "./pages/employee/EmployeeTransfer"
 import Concern from "./pages/Concern";
 import UpdateEmpDetails from "./pages/employee/UpdateEmpDetails";
 import NotificationSystem from "./pages/Notification";
+import AdminNotes from "./pages/AdminNotes";
+
 
 function DesktopRouting() {
   return (
@@ -56,11 +58,12 @@ function DesktopRouting() {
                     <Route path="/transferlist" element={<TransferList />} />
                     <Route path="/saleslist" element={<SalesList />} /> 
                     <Route path="/concern" element={<Concern />} /> 
+                    <Route path="/notes" element={ <AdminNotes/> } /> 
 
                     <Route path="/notification" element={<NotificationSystem/>}/>
                     <Route path="/addCoworker" element={<AddCoworkers/>}/>
                     <Route path="/addCoworker" element={<CreateChannel/>}/>
-                    <Route path="/channelchat" element={<ChannelChat/>}/>
+                    <Route path="/channelchat/:id" element={<ChannelChat/>}/>
                     <Route path="/callbackview" element={<CallbackView/>}/>
                     <Route path="/salesview" element={<SalesView/>}/>
                     <Route path="/transferview" element={<TransferView/>}/>

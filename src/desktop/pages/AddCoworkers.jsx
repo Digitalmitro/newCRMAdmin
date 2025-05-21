@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import searchIcon from "../../assets/desktop/search.svg";
 import { IoIosClose } from "react-icons/io";
 import { useAuth } from "../../context/authContext";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 function AddCoworkers() {
   const [users, setUsers] = useState([]);
@@ -10,9 +10,10 @@ function AddCoworkers() {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
-  const { getAllUsers } = useAuth();
+  const { getAllUsers } = useAuth();  
   const navigate=useNavigate();
-
+const location=useLocation();
+const  isNotesPath=location.state?.from ?? "/chat"
   useEffect(() => {
     const fetchUsers = async () => {
       const userList = await getAllUsers();
@@ -23,7 +24,7 @@ function AddCoworkers() {
   }, []);
 
   const handleCreate=()=>{
-    navigate("/chat",{
+    navigate(isNotesPath,{
       state:{
         name:selectedUsers[0].name,id: selectedUsers[0]._id
       }
@@ -65,6 +66,9 @@ function AddCoworkers() {
   const removeUser = (userId) => {
     setSelectedUsers(selectedUsers.filter((user) => user._id !== userId));
   };
+
+console.log(location.state?.from);
+
 
   return (
     <div className="relative w-full border-b-2 border-orange-400 p-4 space-y-2">

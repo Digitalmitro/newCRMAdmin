@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { IoPeopleSharp } from "react-icons/io5";
-import { Send,Paperclip } from "lucide-react";
+import { Send, Paperclip } from "lucide-react";
 import moment from "moment";
-import { useLocation } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { BsEmojiSmile } from "react-icons/bs";
 import EmojiPicker from "emoji-picker-react";
 import { IoMdShareAlt } from "react-icons/io";
+import { IoIosSettings } from "react-icons/io";
+import { MdDelete } from "react-icons/md";
 import { useAuth } from "../../context/authContext";
 import {
   onChannelMessageReceived,
@@ -14,22 +16,57 @@ import {
 } from "../../utils/socket"; // Socket functions
 import axios from "axios";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import ChannelUpdateForm from "../Components/Channel/ChannelUpdateForm";
 const ChannelChat = () => {
   const { userData } = useAuth();
   const location = useLocation();
+  
   const groupUsers = location.state;
   const senderId = userData?.userId;
   const [messages, setMessages] = useState([]);
   const [channelInfo, setChannelsInfo] = useState();
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [file, setFile] = useState(null); const [modal, setModal] = useState(false);
+  const [file, setFile] = useState(null);
+  const [modal, setModal] = useState(false);
+  const [channelUpdateModal, setChannelUpdateModal] = useState(false);
   const [input, setInput] = useState("");
   const [inputSend, setInputSend] = useState("");
+  const token=localStorage.getItem("token");
+  const navigate=useNavigate();
   const messagesEndRef = useRef(null);
   const handleShare = () => {
     setModal(true);
   };
+  const handleChannelUpdate = () => {
+    setChannelUpdateModal(true);
+  };
 
+ const handleChannelDelete = async () => {
+  const confirmDelete = window.confirm("Are you sure you want to delete this channel?");
+  if (!confirmDelete) return;
+
+  try {
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/api/${groupUsers.id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      }
+    });
+
+    if (response.ok) {
+      console.log("Channel deleted successfully");
+      // Redirect or update UI after delete
+      navigate(`/`); // If using react-router
+      window.location.reload();
+    } else {
+      const errorData = await response.json();
+      console.error("Failed to delete:", errorData.message || response.statusText);
+    }
+  } catch (error) {
+    console.error("Delete error:", error.message);
+  }
+};
 
   const fetchChannelsInfo = async () => {
     try {
@@ -97,7 +134,7 @@ const ChannelChat = () => {
       `${import.meta.env.VITE_BACKEND_API}/api/invite`,
       {
         method: "POST",
-        headers:{
+        headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -118,7 +155,7 @@ const ChannelChat = () => {
 
   const getSenderName = (senderId) => {
     return (
-      channelInfo?.members?.find((member) => member._id === senderId)?.name ||
+      channelInfo?.members?.find((member) => member?._id === senderId)?.name ||
       "Unknown"
     );
   };
@@ -130,6 +167,8 @@ const ChannelChat = () => {
       document.getElementById("chatInput").focus();
     }, 0);
   };
+
+  
 
   return (
     <div className="p-4 w-full flex flex-col h-[500px]">
@@ -153,7 +192,18 @@ const ChannelChat = () => {
             <p className="text[10px]">({channelInfo?.members.length})</p>
           </div>
         </div>
-        <div className="relative flex">
+
+        <div className="relative flex gap-3 ">
+          <div className="-mt-[0.2px]">
+            <button onClick={handleChannelDelete}>
+             <MdDelete className="cursor-pointer" />
+            </button>
+          </div>
+          <div className="-mt-[0.2px]">
+            <button onClick={handleChannelUpdate}>
+              <IoIosSettings className="cursor-pointer" />
+            </button>
+          </div>
           <IoMdShareAlt onClick={handleShare} className="cursor-pointer" />
 
           {modal && (
@@ -199,6 +249,22 @@ const ChannelChat = () => {
               </div>
             </div>
           )}
+          {channelUpdateModal && (
+            <div className="absolute top-14 right-4 z-50 w-[500px] bg-white rounded-xl shadow-lg border border-gray-200">
+              {/* Close Button */}
+              <button
+                className="absolute top-2 right-2 text-gray-500 hover:text-red-600 text-xl font-bold"
+                onClick={() => setChannelUpdateModal(false)}
+              >
+                &times;
+              </button>
+
+              {/* Form */}
+              <ChannelUpdateForm groupUsers={groupUsers} members={channelInfo?.members}/>
+
+            </div>
+
+          )}
         </div>
       </div>
 
@@ -214,14 +280,14 @@ const ChannelChat = () => {
                 }`}
               style={{
                 width: `${msg.message.length <= 5
-                    ? 120
-                    : Math.min((msg.message?.length ?? 0) * 15, 300)
+                  ? 120
+                  : Math.min((msg.message?.length ?? 0) * 15, 300)
                   }px`,
               }}
             >
               <div className="flex gap-2 mb-2 justify-between">
                 <p className="text-[10px]">{getSenderName(msg.sender)}</p>
-                <BsThreeDotsVertical size={15}/>
+                <BsThreeDotsVertical size={15} />
               </div>
 
               <div className="flex gap-2">
@@ -231,10 +297,10 @@ const ChannelChat = () => {
               <span className="text-[9px] flex justify-end">
                 {moment(msg.createdAt).format("HH:mm")}
               </span>
-           
+
 
             </div>
-           
+
           </div>
         ))}
         <div ref={messagesEndRef} />
