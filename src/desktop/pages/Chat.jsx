@@ -139,12 +139,12 @@ const Chat = () => {
               }px`,
             }}
           >
-            <span>{msg.message}</span>
+            <span className="">{msg.message}</span>
             <span className="text-[9px] flex flex-col justify-end">
               {moment(msg.createdAt).format("HH:mm")}
             </span>
           </div>
-        ))}
+        ))} 
         <div ref={messagesEndRef} />
       </div>
 

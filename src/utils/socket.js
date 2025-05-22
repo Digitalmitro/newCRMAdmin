@@ -3,7 +3,7 @@ import { io } from "socket.io-client";
 // import { jwtDecode } from "jwt-decode";
 import logo from "../assets/desktop/logo.svg"
 
-const socket = io(`${import.meta.env.VITE_BACKEND_API}`, { autoConnect: false, reconnection: true });
+const socket = io(`${import.meta.env.VITE_BACKEND_API}`, { autoConnect: false, reconnection: true, withCredentials: true, transports: ["websocket", "polling"] });
 
 const requestNotificationPermission = async () => {
   if ("Notification" in window) {
