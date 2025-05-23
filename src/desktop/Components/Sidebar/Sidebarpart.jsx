@@ -13,18 +13,28 @@ import { TbBrandDatabricks } from "react-icons/tb";
 import { BiStreetView } from "react-icons/bi";
 import { useAuth } from "../../../context/authContext";
 import { useEffect, useState } from "react";
-
+import socket from "../../../utils/socket";
+import axios from "axios";
 function Sidebarpart() {
   const { getChannels } = useAuth();
+  const [unreadCounts, setUnreadCounts] = useState(0);
   const [employees, setEmployees] = useState([]);
   const [channels, setChannels] = useState([]);
-  const { getAllUsers, userData } = useAuth();
+  const { getAllRecentUsers, userData } = useAuth();
+   const [openChatId, setOpenChatId] = useState(null);
+  const navigate = useNavigate();
+
   const channel = async () => {
     const data = await getChannels();
     setChannels(data);
   };
   const allUsers = async () => {
-    const users = await getAllUsers();
+    const users = await getAllRecentUsers();
+     const unreadCounts = {};
+    users.forEach(user => {
+      unreadCounts[user.id] = user.unreadMessages || 0;
+    });
+    setUnreadCounts(unreadCounts);
 
     setEmployees(users);
   };
@@ -32,7 +42,24 @@ function Sidebarpart() {
   useEffect(() => {
     channel();
     allUsers();
+     socket.on("updateUnread", async () => {
+      allUsers()
+    });
+
+    return () => {
+      socket.off("updateUnread");
+      socket.disconnect();
+    };
   }, []);
+  
+  useEffect(() => {
+    const chatState = location.state;
+    if (chatState && chatState.id) {
+      setOpenChatId(chatState.id);
+    } else {
+      setOpenChatId(null);
+    }
+  }, [location]);
 
   const handleCowrokers = () => {
     navigate("/addCoworker");
@@ -43,15 +70,25 @@ function Sidebarpart() {
     });
   };
 
-  const navigate = useNavigate();
-  const handleChat = (name, id) => {
+  const handleChat = async(name, id) => {
+
+    console.log(id);
+      setOpenChatId(id);
+    setUnreadCounts(prev => ({
+      ...prev,
+      [id]: 0
+    }));
     navigate("/chat", {
       state: {
         name,
         id,
       },
     });
-
+   await axios.post(
+      `${import.meta.env.VITE_BACKEND_API}/message/messages/mark-as-read`,
+      { senderId: id },
+      { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+    );
   };
   const handleChannel = () => {
     navigate("/create-channel");
@@ -75,7 +112,7 @@ function Sidebarpart() {
     });
   };
 
-  console.log(channels);
+  console.log(employees);
   
   return (
     <div className="  flex ">
@@ -203,7 +240,7 @@ function Sidebarpart() {
               <li
                 key={i}
                 className="block p-2 text-gray-700 text-[14px] font-medium cursor-pointer"
-                onClick={() => handleChat(user.name, user._id)}
+                onClick={() => handleChat(user.name, user.id)}
               >
                 <p className="flex space-x-2">
                   <span
@@ -215,7 +252,11 @@ function Sidebarpart() {
                     {user?.name?.charAt(0).toUpperCase()}
                   </span>
                   <span>{user.name}</span>
-                  <span>{`(1)`}</span>
+                  {unreadCounts[user.id] > 0 && openChatId !== user.id && (
+                    <span className="text-green-500 font-bold">
+                      ({unreadCounts[user.id]})
+                    </span>
+                  )}
                 </p>
               </li>
             ))}
@@ -234,11 +275,11 @@ function Sidebarpart() {
             Notes <img src={arrow} alt="" className="w-[8px] pt-1" />
           </h3>
           <ul className="mt-2">
-            {employees?.slice(18, 22).map((user, i) => (
+            {employees?.slice(0,4).map((user, i) => (
               <li
                 key={i}
                 className="block p-2 text-gray-700 text-[14px] font-medium cursor-pointer"
-                onClick={() => handleNotes(user.name, user._id)}
+                onClick={() => handleNotes(user.name, user.id)}
               >
                 <p className="flex space-x-2">
                   <span
@@ -250,7 +291,7 @@ function Sidebarpart() {
                     {user?.name?.charAt(0).toUpperCase()}
                   </span>
                   <span>{user.name}</span>
-                  <span>{`(1)`}</span>
+                 
                 </p>
               </li>
             ))}

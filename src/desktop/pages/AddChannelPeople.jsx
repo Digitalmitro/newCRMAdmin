@@ -60,7 +60,7 @@ function AddChannelPeople() {
       // If input is empty, show all users
       setFilteredPeople(allPeople);
     } else {
-      // Filter based on input
+      // Filter based on inpu t
       setFilteredPeople(
         allPeople.filter((person) =>
           person.name.toLowerCase().includes(value.toLowerCase())

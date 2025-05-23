@@ -71,6 +71,26 @@ export const AuthProvider = ({ children }) => {
         }
     }
 
+       const getAllRecentUsers = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/message/recentChats`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                return data?.users;
+            }
+        } catch (error) {
+            console.error("Error fetching data:", error.message);
+            return null;
+        }
+    }
+
     const fetchAttendance = async (range) => {
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/attendance/user?range=${range}`, {
@@ -152,7 +172,7 @@ export const AuthProvider = ({ children }) => {
 
 
     return (
-        <AuthContext.Provider value={{ token, allUsers, allUsersAttendance, allConcerns, setToken, userData, getChannels, fetchAttendance, getAllUsers }}>
+        <AuthContext.Provider value={{ token, allUsers, allUsersAttendance,getAllRecentUsers, allConcerns, setToken, userData, getChannels, fetchAttendance, getAllUsers }}>
             {children}
         </AuthContext.Provider>
     );

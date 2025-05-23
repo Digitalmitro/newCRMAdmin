@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
+import { onSoftRefresh } from "../../utils/socket";
 
 function Concern() {
   const [concerns, setConcerns] = useState([]);
   const token = localStorage.getItem("token");
 
-  const getAllConcerns = async () => {
+ 
+
+ useEffect(() => {
+   const getAllConcerns = async () => {
     const response = await fetch(
       `${import.meta.env.VITE_BACKEND_API}/concern/all`,
       {
@@ -16,10 +20,15 @@ function Concern() {
     const data = await response.json();
     setConcerns(data?.concerns);
   };
-
-  useEffect(() => {
+    const unsubscribe = onSoftRefresh((data) => {
+      if (data.type === "Concern") {
+        getAllConcerns();
+      }
+    });
     getAllConcerns();
+    return () => unsubscribe();
   }, []);
+
 
   const handleApprove = async (id, cid) => {
     try {
@@ -32,14 +41,14 @@ function Concern() {
           },
         }
       );
-      
+
       getAllConcerns();
     } catch (error) {
       console.log(error);
     }
   };
 
-  const handleDeny = async (id,cid) => {
+  const handleDeny = async (id, cid) => {
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_API}/concern/reject/${id}/${cid}`,
@@ -50,7 +59,7 @@ function Concern() {
           },
         }
       );
-      
+
       getAllConcerns();
     } catch (error) {
       console.log(error);
@@ -100,13 +109,12 @@ function Concern() {
                 </td>
                 <td className="p-2 border border-gray-300 font-semibold">
                   <span
-                    className={`px-2 py-1 rounded ${
-                      con.status === "Pending"
-                        ? "bg-yellow-400 text-black"
-                        : con.status === "Approved"
+                    className={`px-2 py-1 rounded ${con.status === "Pending"
+                      ? "bg-yellow-400 text-black"
+                      : con.status === "Approved"
                         ? "bg-green-500 text-white"
                         : "bg-red-500 text-white"
-                    }`}
+                      }`}
                   >
                     {con?.status}
                   </span>

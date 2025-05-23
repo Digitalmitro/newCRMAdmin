@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { onSoftRefresh } from "../../utils/socket";
 
 export default function AdminNotes() {
     const initialToken = localStorage.getItem("token");
@@ -38,9 +39,17 @@ export default function AdminNotes() {
             }
         };
 
+        const unsubscribe = onSoftRefresh((data) => {
+            if (data.type === "Notes") {
+                fetchNotes();
+            }
+
+        });
+
         if (userId) {
             fetchNotes();
         }
+        return () => unsubscribe(); // Cleanup on unmount
     }, [userId]);
 
     return (

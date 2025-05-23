@@ -7,28 +7,22 @@ import { connectSocket } from "./utils/socket";
 
 function App() {
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
-  useEffect(() => {
-    connectSocket(); // Ensures connection on app start
 
-    return () => {
-      console.log("Cleaning up socket connection...");
-    };
-  }, []);
 
   useEffect(() => {
     const handleResize = () => {
-      setScreenWidth(window.innerWidth); 
+      setScreenWidth(window.innerWidth);
     };
     window.addEventListener("resize", handleResize);
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, []); 
+  }, []);
   return (
     <AuthProvider>
-    <BrowserRouter>
-      {screenWidth >= 440 ? <DesktopRouting /> : <MobileRouting />}
-    </BrowserRouter>
+      <BrowserRouter>
+        {screenWidth >= 440 ? <DesktopRouting /> : <MobileRouting />}
+      </BrowserRouter>
     </AuthProvider>
   );
 }

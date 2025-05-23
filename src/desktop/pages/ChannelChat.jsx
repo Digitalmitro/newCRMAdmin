@@ -20,7 +20,6 @@ import ChannelUpdateForm from "../Components/Channel/ChannelUpdateForm";
 const ChannelChat = () => {
   const { userData } = useAuth();
   const location = useLocation();
-  
   const groupUsers = location.state;
   const senderId = userData?.userId;
   const [messages, setMessages] = useState([]);
@@ -98,11 +97,13 @@ const ChannelChat = () => {
   }, [groupUsers.id]);
 
   // ✅ Listen for new messages via Socket.io
-  useEffect(() => {
-    onChannelMessageReceived((newMessage) => {
-      setMessages((prevMessages) => [...prevMessages, newMessage]);
-    });
-  }, []);
+ useEffect(() => {
+  const unsubscribe = onChannelMessageReceived((msg) => {
+    setMessages((prev) => [...prev, msg]);
+  });
+
+  return unsubscribe; // 💥 Clean it up
+}, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

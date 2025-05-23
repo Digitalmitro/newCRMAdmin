@@ -30,6 +30,7 @@ const Chat = () => {
   const [file, setFile] = useState(null);
   // ✅ Load chat history
   useEffect(() => {
+    console.log(location);
     const fetchMessages = async () => {
       try {
         const res = await axios.get(
@@ -108,6 +109,8 @@ const Chat = () => {
     }, 0);
   };
 
+
+
   return (
     <div className="p-4 w-full flex flex-col h-[500px]">
       <div className="flex gap-4 mb-6 border-b pt-2 px-8 pb-2">
@@ -139,7 +142,7 @@ const Chat = () => {
               }px`,
             }}
           >
-            <span className="">{msg.message}</span>
+            <span className="break-all">{msg.message}</span>
             <span className="text-[9px] flex flex-col justify-end">
               {moment(msg.createdAt).format("HH:mm")}
             </span>

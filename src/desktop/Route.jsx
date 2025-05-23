@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import Home from "./pages/Home";
 import Sidebarpart from "./Components/Sidebar/Sidebarpart";
@@ -29,9 +29,16 @@ import Concern from "./pages/Concern";
 import UpdateEmpDetails from "./pages/employee/UpdateEmpDetails";
 import NotificationSystem from "./pages/Notification";
 import AdminNotes from "./pages/AdminNotes";
+import { useSocketSetup } from "../hooks/useSocketSetup";
+import { useGlobalNotification } from "../hooks/useGlobalNotifcation";
+import { onSoftRefresh } from "../utils/socket";
 
 
 function DesktopRouting() {
+   useSocketSetup();
+   useGlobalNotification(); 
+
+   
   return (
     
       <Routes>
