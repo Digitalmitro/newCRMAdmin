@@ -1,23 +1,33 @@
-  import { useNavigate } from "react-router-dom";
-  import { useState, useEffect } from "react";
-  import moment from "moment";
-  import { FaEye } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import moment from "moment";
+import { FaEye } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
-  function TransferList() {
-    const [data, setData] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const limit = 25;
-    const navigate = useNavigate();
-  
-    useEffect(() => {
-      fetchData(currentPage);
-    }, [currentPage]);
-  
-    const fetchData = async (page) => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/transfer/all?page=${page}&limit=${limit}`,
+import { onSoftRefresh } from "../../utils/socket";
+function TransferList() {
+  const [data, setData] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 25;
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsubscribe = onSoftRefresh((data) => {
+      if (data.type === "Transfer_Employee") {
+        fetchData(currentPage);
+      }
+
+    });
+
+    fetchData(currentPage);
+    return () => unsubscribe(); // Cleanup on unmount
+
+  }, [currentPage]);
+
+  const fetchData = async (page) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/transfer/all?page=${page}&limit=${limit}`,
         {
           method: "GET",
           headers: {
@@ -25,50 +35,52 @@ import { MdDelete } from "react-icons/md";
             Authorization: `Bearer ${token}`, // Pass token in Authorization header
           },
         }
-        );
-        const result = await response.json();
-        setData(result.data || []);
-        setTotalPages(result.totalPages || 1);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
+      );
+      const result = await response.json();
+      setData(result.data || []);
+      setTotalPages(result.totalPages || 1);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
-    const deleteCallBack = async (id) => {
-      try {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/transfer/${id}`, {
-          method: "DELETE",
-        });
-        if (response.ok) {
-       
-          setData((prevSales) => prevSales.filter((item) => item._id !== id));
-        } else {
-          console.error("Failed to delete");
-        }
-      } catch (error) {
-        console.error("Error deleting sale:", error);
+  const deleteCallBack = async (id) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/transfer/${id}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+
+        setData((prevSales) => prevSales.filter((item) => item._id !== id));
+      } else {
+        console.error("Failed to delete");
       }
-    };
-    const handleView=(item)=>{
-      navigate("/transferview",{state:{
+    } catch (error) {
+      console.error("Error deleting sale:", error);
+    }
+  };
+  const handleView = (item) => {
+    navigate("/transferview", {
+      state: {
         item
-      }})
-    }
-    const handleDelete=(id)=>{
-      if(!id) return
-      deleteCallBack(id)
-    }
-  
-    const handleNavigate=()=>{
-        navigate("/transfer")
       }
+    })
+  }
+  const handleDelete = (id) => {
+    if (!id) return
+    deleteCallBack(id)
+  }
+
+  const handleNavigate = () => {
+    navigate("/transfer")
+  }
   return (
     <div className=" p-4">
-    <div className=" p-4 flex justify-between">
-      <h2 className="text-[15px] font-medium pb-2">View Transfer</h2>
-    </div>
-    {/* Table */}
-    <div className="overflow-x-auto mt-2 w-[950px] h-[400px]">
+      <div className=" p-4 flex justify-between">
+        <h2 className="text-[15px] font-medium pb-2">View Transfer</h2>
+      </div>
+      {/* Table */}
+      <div className="overflow-x-auto mt-2 w-[950px] h-[400px]">
         <table className="min-w-full border-collapse border border-gray-300">
           <thead className="sticky top-0">
             <tr className="bg-[#D9D9D9] text-[14px]">
@@ -83,7 +95,7 @@ import { MdDelete } from "react-icons/md";
               {/* <th className="border px-3 py-2">Comments</th>
               <th className="border px-3 py-2">Budget</th>
               <th className="border px-3 py-2">Sent To</th>*/}
-              <th className="border px-3 py-2">Action</th> 
+              <th className="border px-3 py-2">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -101,11 +113,11 @@ import { MdDelete } from "react-icons/md";
                 <td className="border px-3 py-2">{item.budget}</td>
                 <td className="border px-3 py-2">{item.sentTo}</td> */}
                 <td className="border px-3 space-x-2 py-2">
-                <button className="border border-orange-500 text-[12px] py-1 text-orange-500 px-2 rounded cursor-pointer" onClick={()=>{handleView((item))}}>
-                  <FaEye />
+                  <button className="border border-orange-500 text-[12px] py-1 text-orange-500 px-2 rounded cursor-pointer" onClick={() => { handleView((item)) }}>
+                    <FaEye />
                   </button>
-                  <button className="border border-red-500 text-[12px] py-1 text-red-500 px-2 rounded cursor-pointer" onClick={() => {handleDelete(item?._id)}}>
-                    <MdDelete/>
+                  <button className="border border-red-500 text-[12px] py-1 text-red-500 px-2 rounded cursor-pointer" onClick={() => { handleDelete(item?._id) }}>
+                    <MdDelete />
                   </button>
                 </td>
               </tr>
@@ -134,7 +146,7 @@ import { MdDelete } from "react-icons/md";
           Next
         </button>
       </div>
-  </div>
+    </div>
   )
 }
 

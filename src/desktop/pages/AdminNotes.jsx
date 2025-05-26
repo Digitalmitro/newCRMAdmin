@@ -38,7 +38,6 @@ export default function AdminNotes() {
                 setLoading(false);
             }
         };
-
         const unsubscribe = onSoftRefresh((data) => {
             if (data.type === "Notes") {
                 fetchNotes();

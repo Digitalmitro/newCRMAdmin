@@ -6,9 +6,7 @@ function Concern() {
   const token = localStorage.getItem("token");
 
  
-
- useEffect(() => {
-   const getAllConcerns = async () => {
+ const getAllConcerns = async () => {
     const response = await fetch(
       `${import.meta.env.VITE_BACKEND_API}/concern/all`,
       {
@@ -20,6 +18,9 @@ function Concern() {
     const data = await response.json();
     setConcerns(data?.concerns);
   };
+  
+ useEffect(() => {
+  
     const unsubscribe = onSoftRefresh((data) => {
       if (data.type === "Concern") {
         getAllConcerns();

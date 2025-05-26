@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import moment from "moment";
 import { useAuth } from "../../context/authContext";
+import { onSoftRefresh } from "../../utils/socket";
 
 function Attendance() {
   const { allUsersAttendance } = useAuth();
@@ -13,7 +14,17 @@ function Attendance() {
   };
 
   useEffect(() => {
+
+    const unsubscribe = onSoftRefresh((data) => {
+      if (data.type === "Attendence") {
+        fetchAttendanceData();
+      }
+
+    });
+
     fetchAttendanceData();
+    return () => unsubscribe(); // Cleanup on unmount
+
   }, []);
 
   return (
@@ -49,9 +60,8 @@ function Attendance() {
             {attendance?.map((user, i) => (
               <tr
                 key={i}
-                className={`text-center ${
-                  i % 2 === 0 ? "bg-gray-50" : "bg-white"
-                } hover:bg-orange-100 transition-all duration-200`}
+                className={`text-center ${i % 2 === 0 ? "bg-gray-50" : "bg-white"
+                  } hover:bg-orange-100 transition-all duration-200`}
               >
                 <td className="border border-gray-300 px-3 py-2">{i + 1}</td>
                 <td className="border border-gray-300 px-3 py-2 font-medium">
@@ -73,18 +83,17 @@ function Attendance() {
                 <td className="border border-gray-300 px-3 py-2">
                   {user.workingTime
                     ? moment
-                        .utc(user.workingTime * 60 * 1000)
-                        .format("H [hr] m [mins]")
+                      .utc(user.workingTime * 60 * 1000)
+                      .format("H [hr] m [mins]")
                     : "0 hr 0 mins"}
                 </td>
                 <td
-                  className={`border border-gray-300 px-3 py-2 font-medium ${
-                    user.status === "Present"
-                      ? "text-green-600"
-                      : user.status === "Absent"
+                  className={`border border-gray-300 px-3 py-2 font-medium ${user.status === "Present"
+                    ? "text-green-600"
+                    : user.status === "Absent"
                       ? "text-red-600"
                       : "text-gray-600"
-                  }`}
+                    }`}
                 >
                   {user.status}
                 </td>

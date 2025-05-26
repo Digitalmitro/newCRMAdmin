@@ -11,7 +11,15 @@ function AttendanceList() {
   };
 
   useEffect(() => {
-    fetchAttendanceData();
+      const unsubscribe = onSoftRefresh((data) => {
+         if (data.type === "Attendence") {
+           fetchAttendanceData();
+         }
+   
+       });
+   
+       fetchAttendanceData();
+       return () => unsubscribe(); // Cleanup on unmount
   }, []);
   
   return (

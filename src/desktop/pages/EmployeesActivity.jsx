@@ -5,6 +5,7 @@ import { MdDelete } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { RxCross2 } from "react-icons/rx";
+
 function EmployeesActivity() {
   const [employees, setEmployees] = useState([]);
   const navigate = useNavigate();

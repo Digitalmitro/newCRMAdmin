@@ -3,13 +3,13 @@ import { useNavigate } from "react-router-dom";
 import moment from "moment";
 import { FaEye } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
+import { onSoftRefresh } from "../../utils/socket";
 function SalesList() {
   const navigate = useNavigate();
-  const [sales,setSales]=useState([])
+  const [sales, setSales] = useState([])
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const limit = 25;
-  useEffect(() => {
     const fetchSalesList = async () => {
       const token = localStorage.getItem("token");
       try {
@@ -25,7 +25,7 @@ function SalesList() {
         );
         if (response.ok) {
           const data = await response.json();
-          
+
           setSales(data?.data || []);
 
           setTotalPages(data.totalPages || 1);
@@ -34,7 +34,19 @@ function SalesList() {
         console.error("Error fetching sales data:", error);
       }
     };
-    fetchSalesList();
+
+  useEffect(() => {
+  
+    const unsubscribe = onSoftRefresh((data) => {
+      if (data.type === "Sale_Employee") {
+        fetchSalesList();
+      }
+
+    });
+
+      fetchSalesList();
+    return () => unsubscribe(); // Cleanup on unmount
+
   }, [currentPage]);
 
   const deleteCallBack = async (id) => {
@@ -43,7 +55,7 @@ function SalesList() {
         method: "DELETE",
       });
       if (response.ok) {
-   
+
         setSales((prevSales) => prevSales.filter((item) => item._id !== id));
       } else {
         console.error("Failed to delete");
@@ -52,18 +64,21 @@ function SalesList() {
       console.error("Error deleting sale:", error);
     }
   };
-  
-  const handleView=(item)=>{
-    navigate("/salesview",{state:{
-      item
-    }})
+
+  const handleView = (item) => {
+    navigate("/salesview", {
+      state: {
+        item
+      }
+    })
   }
-  const handleDelete=(id)=>{
-    if(!id) return
+  const handleDelete = (id) => {
+    if (!id) return
     deleteCallBack(id)
+    fetchSalesList();
   }
 
-  
+
   const handleNavigate = () => {
     navigate("/sales");
   };
@@ -73,23 +88,23 @@ function SalesList() {
         <h2 className="text-[15px] font-medium pb-2">View Sales</h2>
 
       </div>
-      
+
       <div className="overflow-x-auto mt-4 w-[970px] h-[400px]">
         <table className="min-w-full border-collapse border border-gray-300">
-          
+
           <thead>
             <tr className="bg-[#D9D9D9] ">
               <th className="border border-gray-400 px-4 py-2 text-[15px] font-medium pt-4 pb-4">
-              Created_Date
+                Created_Date
               </th>
               <th className="border border-gray-400 px-2 py-2 text-[15px] font-medium pt-4 pb-4">
-              Name
+                Name
               </th>
               <th className="border border-gray-400 px-2 py-2 text-[15px] font-medium pt-4 pb-4">
-              Phone
+                Phone
               </th>
               <th className="border border-gray-400 px-2 py-2 text-[15px] font-medium pt-4 pb-4">
-              Email
+                Email
               </th>
               <th className="border border-gray-400 px-2 py-2 text-[15px] font-medium pt-4 pb-4">
                 Domain Name
@@ -103,7 +118,7 @@ function SalesList() {
             {sales.map((item, index) => (
               <tr key={index} className="text-[13px] text-gray-500">
                 <td className="border border-gray-300 px-4 py-2  text-center">
-                {moment(item.createdAt).format("YYYY-MM-DD")}
+                  {moment(item.createdAt).format("YYYY-MM-DD")}
                 </td>
                 <td className="border border-gray-300 px-4 py-2 text-center">
                   {item.name}
@@ -118,13 +133,13 @@ function SalesList() {
                   {item.domainName}
                 </td>
                 <td className="border space-x-2  border-gray-300  text-center">
-                <button className="border border-orange-500 text-[12px] py-1 text-orange-500 px-2 rounded cursor-pointer" onClick={()=>{handleView((item))}}>
-                  <FaEye />
+                  <button className="border border-orange-500 text-[12px] py-1 text-orange-500 px-2 rounded cursor-pointer" onClick={() => { handleView((item)) }}>
+                    <FaEye />
                   </button>
-                  <button className="border border-red-500 text-[12px] py-1 text-red-500 px-2 rounded cursor-pointer" onClick={() => {handleDelete(item?._id)}}>
-                    <MdDelete/>
+                  <button className="border border-red-500 text-[12px] py-1 text-red-500 px-2 rounded cursor-pointer" onClick={() => { handleDelete(item?._id) }}>
+                    <MdDelete />
                   </button>
-                  
+
                 </td>
               </tr>
             ))}

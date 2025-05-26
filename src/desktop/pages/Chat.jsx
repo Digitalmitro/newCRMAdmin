@@ -1,25 +1,26 @@
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import profile from "../../assets/desktop/profileIcon.svg";
-import { Send,Paperclip } from "lucide-react";
+import { Send, Paperclip } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import {
-  sendMessage,
+    sendMessage,
   onMessageReceived,
   connectSocket,
-  onUserStatusUpdate
+  onUserStatusUpdate,
+  fetchOnlineUsers
 } from "../../utils/socket";
 import { useAuth } from "../../context/authContext";
 import moment from "moment";
 import { BsEmojiSmile } from "react-icons/bs";
 import EmojiPicker from "emoji-picker-react";
+import { downloadImage } from "../../utils/helper";
 
 const Chat = () => {
   const location = useLocation();
   const user = location.state;
   const receiverId = user?.id;
   const selectedUser = location?.state?.selectedUsers;
- 
   const { userData } = useAuth();
   const senderId = userData?.userId;
   const [isOnline, setIsOnline] = useState(false);
@@ -27,15 +28,37 @@ const Chat = () => {
   const [input, setInput] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesEndRef = useRef(null); // Auto-scroll reference
+  const [uploading, setUploading] = useState(false);
+  const [loading, setloading] = useState(false);
   const [file, setFile] = useState(null);
   // ✅ Load chat history
+
+  const markMessagesAsRead = async (senderId) => {
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_BACKEND_API}/message/messages/mark-as-read`,
+        { senderId },
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+    } catch (error) {
+      console.error("Error marking messages as read:", error);
+    }
+  };
+
   useEffect(() => {
+    if (receiverId) {
+      markMessagesAsRead(receiverId);
+    }
+  }, [receiverId]);
+  useEffect(() => {
+    connectSocket();
     console.log(location);
     const fetchMessages = async () => {
       try {
         const res = await axios.get(
-          `${
-            import.meta.env.VITE_BACKEND_API
+          `${import.meta.env.VITE_BACKEND_API
           }/message/messages/${senderId}/${receiverId}`
         );
         setMessages(res.data?.messages);
@@ -45,13 +68,13 @@ const Chat = () => {
       }
     };
 
-    if (senderId && receiverId) {
-      fetchMessages();
-    }
+    fetchMessages();
 
-    connectSocket();
+    fetchOnlineUsers((onlineUsers) => {
+      setIsOnline(onlineUsers.includes(receiverId));
+    });
 
-    onMessageReceived((newMessage) => {
+    const messageListener = (newMessage) => {
       if (
         (newMessage.sender === senderId &&
           newMessage.receiver === receiverId) ||
@@ -59,16 +82,20 @@ const Chat = () => {
       ) {
         setMessages((prevMessages) => [...prevMessages, newMessage]);
       }
-    });
-    
-    onUserStatusUpdate(({ userId, status }) => {
+    };
+    onMessageReceived(messageListener);
+
+    const statusListener = ({ userId, status }) => {
       if (userId === receiverId) {
         setIsOnline(status === "online");
       }
-    });
+    };
+
+    onUserStatusUpdate(statusListener);
 
     return () => {
-      console.log("🛑 Unsubscribing from message listener");
+      onMessageReceived(() => { }); // Remove listener
+      onUserStatusUpdate(() => { }); // Remove listener
     };
   }, [senderId, receiverId]);
 
@@ -77,10 +104,43 @@ const Chat = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // ✅ Upload file function
+  const uploadFile = async (file) => {
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_API}/files/upload`,
+        formData,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      setUploading(false);
+      return response.data;
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      setUploading(false);
+      return null;
+    }
+  };
+
+
   // ✅ Send message
   const handleSendMessage = async () => {
     if (!input.trim()) return;
+    let messageContent = input.trim();
+    if (file) {
+      setloading(true)
+      const fileUrl = await uploadFile(file);
 
+      if (!fileUrl) return;
+      messageContent = fileUrl.fileUrl;
+      setFile(null);
+      setloading(false)
+    }
     const newMessage = {
       sender: senderId,
       receiver: receiverId,
@@ -109,7 +169,8 @@ const Chat = () => {
     }, 0);
   };
 
-
+  const isImage = (url) => /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+  const isDocument = (url) => /\.(pdf|docx|xlsx|pptx)$/i.test(url);
 
   return (
     <div className="p-4 w-full flex flex-col h-[500px]">
@@ -124,30 +185,71 @@ const Chat = () => {
       </div>
 
       <div className="flex-1 p-4 overflow-y-auto scrollable mb-10">
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`p-2 max-w-xs rounded-lg mb-2 flex justify-between 
-            ${
-              msg.sender === senderId
-                ? "bg-gradient-to-r from-orange-500 to-orange-400 text-white ml-auto"
-                : "bg-gradient-to-l from-gray-500 to-gray-700 text-white"
-            }
-            `}
-            style={{
-              width: `${
-                msg.message.length <= 5
+        {messages.map((msg, index) => {
+
+          console.log(`${msg.message}?fl_attachment`)
+          return (
+            <div
+              key={index}
+              className={`p-2 max-w-xs rounded-lg mb-2 flex justify-between 
+                ${msg.sender === senderId
+                  ? "bg-gradient-to-r from-orange-500 to-orange-400 text-white ml-auto"
+                  : "bg-gradient-to-l from-gray-500 to-gray-700 text-white"
+                }`}
+              style={{
+                width: `${msg.message.length <= 5
                   ? 90
                   : Math.min((msg.message?.length ?? 0) * 15, 300)
-              }px`,
-            }}
-          >
-            <span className="break-all">{msg.message}</span>
-            <span className="text-[9px] flex flex-col justify-end">
-              {moment(msg.createdAt).format("HH:mm")}
-            </span>
-          </div>
-        ))} 
+                  }px`,
+              }}
+            >
+              {isImage(msg.message) ? (
+                <>
+                  <img
+                    src={msg.message}
+                    alt="Sent Image"
+                    className="w-45 h-auto rounded-lg"
+                  />
+                  <button
+                    onClick={() => downloadImage(msg.message)}
+                    className="px-2 py-1 bg-blue-000 text-white text-xs rounded-full text-center mt-1 self-start shadow-md"
+                  >
+                    📥 Download
+                  </button>
+                </>
+              ) : isDocument(msg.message) ? (
+                <div className="flex items-center gap-2 bg-gray-200 text-black p-2 rounded-lg">
+                  <span className="truncate w-20">
+                    {msg.message.split("/").pop()}
+                  </span>
+                  <a
+                    href={msg.message}
+                    download
+                    className="px-2 py-1 bg-blue-500 text-white text-xs rounded-full text-center mt-1 self-start shadow-md"
+                  >
+                    📥 Download
+                  </a>
+                </div>
+              ) : msg.message.startsWith("http") ? (
+                <a
+                  href={msg.message}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline break-words text-blue-300 break-all"
+                >
+                  {msg.message}
+                </a>
+              ) : (
+                <span className="whitespace-pre-wrap break-words overflow-auto">
+                  {msg.message}
+                </span>
+              )}
+              <span className="text-[9px] flex flex-col justify-end">
+                {moment(msg.createdAt).format("HH:mm")}
+              </span>
+            </div>
+          );
+        })}
         <div ref={messagesEndRef} />
       </div>
 

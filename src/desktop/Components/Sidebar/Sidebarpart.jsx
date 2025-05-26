@@ -21,7 +21,7 @@ function Sidebarpart() {
   const [employees, setEmployees] = useState([]);
   const [channels, setChannels] = useState([]);
   const { getAllRecentUsers, userData } = useAuth();
-   const [openChatId, setOpenChatId] = useState(null);
+  const [openChatId, setOpenChatId] = useState(null);
   const navigate = useNavigate();
 
   const channel = async () => {
@@ -30,19 +30,18 @@ function Sidebarpart() {
   };
   const allUsers = async () => {
     const users = await getAllRecentUsers();
-     const unreadCounts = {};
+    const unreadCounts = {};
     users.forEach(user => {
       unreadCounts[user.id] = user.unreadMessages || 0;
     });
     setUnreadCounts(unreadCounts);
-
     setEmployees(users);
   };
 
   useEffect(() => {
     channel();
     allUsers();
-     socket.on("updateUnread", async () => {
+    socket.on("updateUnread", async () => {
       allUsers()
     });
 
@@ -51,7 +50,7 @@ function Sidebarpart() {
       socket.disconnect();
     };
   }, []);
-  
+
   useEffect(() => {
     const chatState = location.state;
     if (chatState && chatState.id) {
@@ -70,10 +69,10 @@ function Sidebarpart() {
     });
   };
 
-  const handleChat = async(name, id) => {
+  const handleChat = async (name, id) => {
 
     console.log(id);
-      setOpenChatId(id);
+    setOpenChatId(id);
     setUnreadCounts(prev => ({
       ...prev,
       [id]: 0
@@ -84,7 +83,7 @@ function Sidebarpart() {
         id,
       },
     });
-   await axios.post(
+    await axios.post(
       `${import.meta.env.VITE_BACKEND_API}/message/messages/mark-as-read`,
       { senderId: id },
       { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
@@ -93,7 +92,7 @@ function Sidebarpart() {
   const handleChannel = () => {
     navigate("/create-channel");
   };
-  const handleChannelChat = (name, id,description) => {
+  const handleChannelChat = (name, id, description) => {
     navigate(`/channelchat/${id}`, {
       state: {
         name,
@@ -113,7 +112,7 @@ function Sidebarpart() {
   };
 
   console.log(employees);
-  
+
   return (
     <div className="  flex ">
       <div className="px-3 pt-2 border border-orange-400">
@@ -202,7 +201,7 @@ function Sidebarpart() {
               <li key={channel._id}>
                 <p
                   className="block p-2 text-gray-700 font-medium text-[14px] cursor-pointer"
-                  onClick={() => handleChannelChat(channel.name, channel._id,channel.description)}
+                  onClick={() => handleChannelChat(channel.name, channel._id, channel.description)}
                 >
                   <p className="flex space-x-2">
                     <span
@@ -275,7 +274,7 @@ function Sidebarpart() {
             Notes <img src={arrow} alt="" className="w-[8px] pt-1" />
           </h3>
           <ul className="mt-2">
-            {employees?.slice(0,4).map((user, i) => (
+            {employees?.slice(0, 4).map((user, i) => (
               <li
                 key={i}
                 className="block p-2 text-gray-700 text-[14px] font-medium cursor-pointer"
@@ -291,7 +290,7 @@ function Sidebarpart() {
                     {user?.name?.charAt(0).toUpperCase()}
                   </span>
                   <span>{user.name}</span>
-                 
+
                 </p>
               </li>
             ))}

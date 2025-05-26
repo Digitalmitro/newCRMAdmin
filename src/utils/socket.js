@@ -76,8 +76,21 @@ export const sendMessage = (sender,receiver, message) => {
 
 // Listen for user status updates (online/offline)
 export const onUserStatusUpdate = (callback) => {
+  socket.off("updateUserStatus"); 
   socket.on("updateUserStatus", ({ userId, status }) => {
+    console.log(`User ${userId} is now ${status}`);
     callback({ userId, status });
+  });
+
+  // Request fresh online user data when subscribing
+  socket.emit("getOnlineUsers");
+};
+
+// ✅ Fetch the list of online users when connecting
+export const fetchOnlineUsers = (callback) => {
+  socket.emit("getOnlineUsers");
+  socket.on("onlineUsersList", (users) => {
+    callback(users);
   });
 };
 
