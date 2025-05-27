@@ -26,7 +26,7 @@ const  isNotesPath=location.state?.from ?? "/chat"
   const handleCreate=()=>{
     navigate(isNotesPath,{
       state:{
-        name:selectedUsers[0]?.name,id: selectedUsers[0]?._id
+        name:selectedUsers[0].name,id: selectedUsers[0]._id
       }
     })
   }
