@@ -71,7 +71,7 @@ function Sidebarpart() {
 
   const handleChat = async (name, id) => {
 
-    console.log(id);
+    //(id);
     setOpenChatId(id);
     setUnreadCounts(prev => ({
       ...prev,
@@ -111,7 +111,7 @@ function Sidebarpart() {
     });
   };
 
-  console.log(employees);
+  //(employees);
 
   return (
     <div className="  flex ">

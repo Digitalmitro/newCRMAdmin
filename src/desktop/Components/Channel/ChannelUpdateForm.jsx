@@ -31,13 +31,13 @@ export default function ChannelUpdateForm({ groupUsers, members }) {
                     setSelectedMembers(selected);
                 }
             } catch (error) {
-                console.log(error);
+                //(error);
             }
         };
         fetchUsers();
     }, []);
 
-    console.log(members);
+    //(members);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -50,7 +50,7 @@ export default function ChannelUpdateForm({ groupUsers, members }) {
         data.members = selectedMembers.map(member => member.value); // Get only IDs
         data.description = data.description || ""; // Handle fallback (optional)
 
-        console.log("Form Data:", data);
+        //("Form Data:", data);
 
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/api/${channelId}`, {
@@ -67,7 +67,7 @@ export default function ChannelUpdateForm({ groupUsers, members }) {
             });
 
             if (response.ok) {
-                console.log("Channel updated successfully ✅");
+                //("Channel updated successfully ✅");
                 window.location.reload(); // Reload the page or navigate as needed
             } else {
                 const errorData = await response.json();

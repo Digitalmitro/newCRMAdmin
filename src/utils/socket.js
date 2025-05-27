@@ -39,12 +39,12 @@ export const connectSocket =async  () => {
   socket.connect();
 
   socket.on("connect", () => {
-    // console.log("✅ Socket connected:", socket.id);
+    // //("✅ Socket connected:", socket.id);
     socket.emit("authenticate", token);
   });
 
   socket.on("authenticated", (data) => {
-    // console.log("✅ User authenticated:", data);
+    // //("✅ User authenticated:", data);
   });
 
   socket.on("unauthorized", (msg) => {
@@ -78,7 +78,7 @@ export const sendMessage = (sender,receiver, message) => {
 export const onUserStatusUpdate = (callback) => {
   socket.off("updateUserStatus"); 
   socket.on("updateUserStatus", ({ userId, status }) => {
-    console.log(`User ${userId} is now ${status}`);
+    //(`User ${userId} is now ${status}`);
     callback({ userId, status });
   });
 
@@ -152,7 +152,7 @@ export const onSoftRefresh = (callback) => {
 };
 // Disconnect socket
 export const disconnectSocket = () => {
-  console.log("🔌 Disconnecting socket...");
+  //("🔌 Disconnecting socket...");
   socket.disconnect();
 };
 

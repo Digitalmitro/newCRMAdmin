@@ -17,7 +17,7 @@ export default function NotificationSystem() {
         setEmp(data);
       }
     } catch (error) {
-      console.log(error);
+      //(error);
     }
   };
 
@@ -99,7 +99,7 @@ export default function NotificationSystem() {
         setSelectAll(false);
       }
     } catch (error) {
-      console.log("Error sending notification:", error);
+      //("Error sending notification:", error);
     }
   };
   

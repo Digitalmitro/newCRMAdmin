@@ -54,7 +54,7 @@ const ChannelChat = () => {
     });
 
     if (response.ok) {
-      console.log("Channel deleted successfully");
+      //("Channel deleted successfully");
       // Redirect or update UI after delete
       navigate(`/`); // If using react-router
       window.location.reload();

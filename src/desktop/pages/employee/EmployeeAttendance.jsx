@@ -26,7 +26,7 @@ function EmployeeAttendance() {
         setAttendance(data?.data);
       }
     } catch (error) {
-      console.log(error);
+      //(error);
     }
   };
 

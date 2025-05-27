@@ -54,7 +54,7 @@ const Chat = () => {
   }, [receiverId]);
   useEffect(() => {
     connectSocket();
-    console.log(location);
+    //(location);
     const fetchMessages = async () => {
       try {
         const res = await axios.get(
@@ -62,7 +62,7 @@ const Chat = () => {
           }/message/messages/${senderId}/${receiverId}`
         );
         setMessages(res.data?.messages);
-        // console.log(res.data?.messages)
+        // //(res.data?.messages)
       } catch (error) {
         console.error("Error fetching messages:", error);
       }
@@ -187,7 +187,7 @@ const Chat = () => {
       <div className="flex-1 p-4 overflow-y-auto scrollable mb-10">
         {messages.map((msg, index) => {
 
-          console.log(`${msg.message}?fl_attachment`)
+          //(`${msg.message}?fl_attachment`)
           return (
             <div
               key={index}

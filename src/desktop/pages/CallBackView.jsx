@@ -77,7 +77,7 @@ const callbackdata=location?.state?.item;
   //     });
   //     navigate("/callbacklist")
   //   } catch (error) {
-  //     console.log(error)
+  //     //(error)
   //   }
   // }
 

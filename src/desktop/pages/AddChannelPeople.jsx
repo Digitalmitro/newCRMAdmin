@@ -32,7 +32,7 @@ function AddChannelPeople() {
 
       }
     } catch (error) {
-      console.log(error)
+      //(error)
     }
     navigate("/", { replace: true });
     window.location.reload();
@@ -46,7 +46,7 @@ function AddChannelPeople() {
           setAllPeople(response); // Store API response
         }
       } catch (error) {
-        console.log(error);
+        //(error);
       }
     };
     fetchUsers();

@@ -61,10 +61,10 @@ function UpdateEmpDetails() {
         const data = await response.json();
        
       } else {
-        console.log("error in update activity details");
+        //("error in update activity details");
       }
     } catch (error) {
-      console.log(error);
+      //(error);
     }
   };
   useEffect(() => {

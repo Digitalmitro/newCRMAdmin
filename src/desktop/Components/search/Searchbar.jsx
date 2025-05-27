@@ -33,7 +33,7 @@ function Searchbar() {
 
   function handleNotification(senderId) {
     const clickedNotification = notification.find(item => item.sender === senderId)
-console.log(clickedNotification);
+//(clickedNotification);
 
   
     if (clickedNotification.type === "DM") {
@@ -82,13 +82,13 @@ console.log(clickedNotification);
           setNotification(data?.notifications);
         }
       } catch (error) {
-        console.log(error);
+        //(error);
       }
     };
     notification();
   }, []);
 
-  console.log(notification);
+  //(notification);  
 
 
   return (

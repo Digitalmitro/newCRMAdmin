@@ -45,7 +45,7 @@ function Concern() {
 
       getAllConcerns();
     } catch (error) {
-      console.log(error);
+      //(error);
     }
   };
 
@@ -63,7 +63,7 @@ function Concern() {
 
       getAllConcerns();
     } catch (error) {
-      console.log(error);
+      //(error);
     }
   };
 

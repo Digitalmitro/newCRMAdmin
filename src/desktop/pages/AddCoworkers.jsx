@@ -26,7 +26,7 @@ const  isNotesPath=location.state?.from ?? "/chat"
   const handleCreate=()=>{
     navigate(isNotesPath,{
       state:{
-        name:selectedUsers[0].name,id: selectedUsers[0]._id
+        name:selectedUsers[0]?.name,id: selectedUsers[0]?._id
       }
     })
   }
@@ -67,7 +67,7 @@ const  isNotesPath=location.state?.from ?? "/chat"
     setSelectedUsers(selectedUsers.filter((user) => user._id !== userId));
   };
 
-console.log(location.state?.from);
+//(location.state?.from);
 
 
   return (

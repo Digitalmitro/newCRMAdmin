@@ -11,7 +11,7 @@ function EmployeeDashboard() {
   const [dates,setDates]=useState([])
   const {fetchAttendance}=useAuth()
   // const location=useLocation()
-  // console.log(location.state)
+  // //(location.state)
   const {id}=useParams()
  
   const navigate=useNavigate(id)
@@ -41,7 +41,7 @@ function EmployeeDashboard() {
           setDates(data)
         }
       }catch(err){
-        console.log(err)
+        //(err)
       }
   }
 useEffect(()=>{

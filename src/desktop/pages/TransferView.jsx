@@ -5,7 +5,7 @@ function TransferView() {
 const navigate=useNavigate()
 const location=useLocation()
 const callbackdata=location?.state?.item;
-// console.log(callbackdata)
+// //(callbackdata)
 
   const [callback,setCallback]=useState({
     name:callbackdata?.name,
@@ -78,7 +78,7 @@ const callbackdata=location?.state?.item;
   //     });
   //     navigate("/saleslist")
   //   } catch (error) {
-  //     console.log(error)
+  //     //(error)
   //   }
   // }
 
