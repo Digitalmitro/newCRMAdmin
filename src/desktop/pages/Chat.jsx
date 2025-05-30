@@ -4,7 +4,7 @@ import profile from "../../assets/desktop/profileIcon.svg";
 import { Send, Paperclip } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import {
-    sendMessage,
+  sendMessage,
   onMessageReceived,
   connectSocket,
   onUserStatusUpdate,
@@ -104,6 +104,7 @@ const Chat = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+
   // ✅ Upload file function
   const uploadFile = async (file) => {
     setUploading(true);
@@ -130,8 +131,9 @@ const Chat = () => {
 
   // ✅ Send message
   const handleSendMessage = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() && !file) return;
     let messageContent = input.trim();
+
     if (file) {
       setloading(true)
       const fileUrl = await uploadFile(file);
@@ -144,7 +146,7 @@ const Chat = () => {
     const newMessage = {
       sender: senderId,
       receiver: receiverId,
-      message: input,
+      message: messageContent,
       createdAt: new Date(),
     };
 
@@ -252,7 +254,13 @@ const Chat = () => {
         })}
         <div ref={messagesEndRef} />
       </div>
-
+      {
+        loading && (
+          <div className="flex items-center justify-center">
+            <div className="w-5 h-5 border-2 mb-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        )
+      }
       <div className="p-4 bg-white flex items-center border-t fixed bottom-0 w-[65%] space-x-2">
         <div className="relative">
           <button onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
