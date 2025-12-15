@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import profile from "../../assets/desktop/profileIcon.svg";
 import { Send, Paperclip } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import {
@@ -8,7 +7,7 @@ import {
   onMessageReceived,
   connectSocket,
   onUserStatusUpdate,
-  fetchOnlineUsers
+  fetchOnlineUsers,
 } from "../../utils/socket";
 import { useAuth } from "../../context/authContext";
 import moment from "moment";
@@ -31,16 +30,14 @@ const Chat = () => {
   const [uploading, setUploading] = useState(false);
   const [loading, setloading] = useState(false);
   const [file, setFile] = useState(null);
-  // ✅ Load chat history
+  const authHeader = { Authorization: `Bearer ${localStorage.getItem("token")}` };
 
   const markMessagesAsRead = async (senderId) => {
     try {
       await axios.post(
         `${import.meta.env.VITE_BACKEND_API}/message/messages/mark-as-read`,
         { senderId },
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
+        { headers: authHeader }
       );
     } catch (error) {
       console.error("Error marking messages as read:", error);
@@ -52,17 +49,15 @@ const Chat = () => {
       markMessagesAsRead(receiverId);
     }
   }, [receiverId]);
+
   useEffect(() => {
     connectSocket();
-    //(location);
     const fetchMessages = async () => {
       try {
         const res = await axios.get(
-          `${import.meta.env.VITE_BACKEND_API
-          }/message/messages/${senderId}/${receiverId}`
+          `${import.meta.env.VITE_BACKEND_API}/message/messages/${senderId}/${receiverId}`
         );
         setMessages(res.data?.messages);
-        // //(res.data?.messages)
       } catch (error) {
         console.error("Error fetching messages:", error);
       }
@@ -76,8 +71,7 @@ const Chat = () => {
 
     const messageListener = (newMessage) => {
       if (
-        (newMessage.sender === senderId &&
-          newMessage.receiver === receiverId) ||
+        (newMessage.sender === senderId && newMessage.receiver === receiverId) ||
         (newMessage.sender === receiverId && newMessage.receiver === senderId)
       ) {
         setMessages((prevMessages) => [...prevMessages, newMessage]);
@@ -94,18 +88,17 @@ const Chat = () => {
     onUserStatusUpdate(statusListener);
 
     return () => {
-      onMessageReceived(() => { }); // Remove listener
-      onUserStatusUpdate(() => { }); // Remove listener
+      onMessageReceived(() => {});
+      onUserStatusUpdate(() => {});
     };
   }, [senderId, receiverId]);
 
-  // ✅ Auto-scroll to latest message
+  // Auto-scroll to latest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-
-  // ✅ Upload file function
+  // Upload file function
   const uploadFile = async (file) => {
     setUploading(true);
     const formData = new FormData();
@@ -116,7 +109,7 @@ const Chat = () => {
         `${import.meta.env.VITE_BACKEND_API}/files/upload`,
         formData,
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          headers: authHeader,
         }
       );
       setUploading(false);
@@ -128,20 +121,37 @@ const Chat = () => {
     }
   };
 
+  const handleClearChat = async () => {
+    if (!receiverId) return;
+    const confirmed = window.confirm("Clear all messages in this chat? This can't be undone.");
+    if (!confirmed) return;
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_BACKEND_API}/message/clear`,
+        { otherUserId: receiverId },
+        { headers: authHeader }
+      );
+      setMessages([]);
+      alert("Chat cleared");
+    } catch (error) {
+      console.error("Error clearing chat:", error);
+      alert("Unable to clear chat. Please try again.");
+    }
+  };
 
-  // ✅ Send message
+  // Send message
   const handleSendMessage = async () => {
     if (!input.trim() && !file) return;
     let messageContent = input.trim();
 
     if (file) {
-      setloading(true)
+      setloading(true);
       const fileUrl = await uploadFile(file);
 
       if (!fileUrl) return;
       messageContent = fileUrl.fileUrl;
       setFile(null);
-      setloading(false)
+      setloading(false);
     }
     const newMessage = {
       sender: senderId,
@@ -151,10 +161,7 @@ const Chat = () => {
     };
 
     try {
-      await axios.post(
-        `${import.meta.env.VITE_BACKEND_API}/message/send-message`,
-        newMessage
-      );
+      await axios.post(`${import.meta.env.VITE_BACKEND_API}/message/send-message`, newMessage);
       sendMessage(senderId, receiverId, input);
       setInput("");
     } catch (error) {
@@ -162,7 +169,7 @@ const Chat = () => {
     }
   };
 
-  // ✅ Handle emoji selection
+  // Handle emoji selection
   const handleEmojiClick = (emojiData) => {
     setInput((prev) => prev + emojiData.emoji);
 
@@ -176,20 +183,26 @@ const Chat = () => {
 
   return (
     <div className="p-4 w-full flex flex-col h-[500px]">
-      <div className="flex gap-4 mb-6 border-b pt-2 px-8 pb-2">
+      <div className="flex gap-4 mb-6 border-b pt-2 px-8 pb-2 items-center">
         <p className=" rounded-full border items-center  flex justify-center w-10 h-10 text-xl  text-white bg-orange-500">
           {user?.name?.charAt(0) || selectedUser?.[0]?.name?.charAt(0)}
         </p>
         <div>
           <h2 className="text-sm font-semibold">{user?.name}</h2>
-          <p className="text-[10px] text-green-500 font-semibold">{isOnline ? "🟢 Online" : "🔴 Offline"}</p>
+          <p className="text-[10px] text-green-500 font-semibold">{isOnline ? "Online" : "Offline"}</p>
+        </div>
+        <div className="ml-auto">
+          <button
+            onClick={handleClearChat}
+            className="text-xs px-3 py-1 border border-gray-300 rounded-full hover:bg-gray-100"
+          >
+            Clear chat
+          </button>
         </div>
       </div>
 
       <div className="flex-1 p-4 overflow-y-auto scrollable mb-10">
         {messages.map((msg, index) => {
-
-          //(`${msg.message}?fl_attachment`)
           return (
             <div
               key={index}
@@ -199,37 +212,28 @@ const Chat = () => {
                   : "bg-gradient-to-l from-gray-500 to-gray-700 text-white"
                 }`}
               style={{
-                width: `${msg.message.length <= 5
-                  ? 90
-                  : Math.min((msg.message?.length ?? 0) * 15, 300)
-                  }px`,
+                width: `${msg.message.length <= 5 ? 90 : Math.min((msg.message?.length ?? 0) * 15, 300)}px`,
               }}
             >
               {isImage(msg.message) ? (
                 <>
-                  <img
-                    src={msg.message}
-                    alt="Sent Image"
-                    className="w-45 h-auto rounded-lg"
-                  />
+                  <img src={msg.message} alt="Sent" className="w-45 h-auto rounded-lg" />
                   <button
                     onClick={() => downloadImage(msg.message)}
                     className="px-2 py-1 bg-blue-000 text-white text-xs rounded-full text-center mt-1 self-start shadow-md"
                   >
-                    📥 Download
+                    Download
                   </button>
                 </>
               ) : isDocument(msg.message) ? (
                 <div className="flex items-center gap-2 bg-gray-200 text-black p-2 rounded-lg">
-                  <span className="truncate w-20">
-                    {msg.message.split("/").pop()}
-                  </span>
+                  <span className="truncate w-20">{msg.message.split("/").pop()}</span>
                   <a
                     href={msg.message}
                     download
                     className="px-2 py-1 bg-blue-500 text-white text-xs rounded-full text-center mt-1 self-start shadow-md"
                   >
-                    📥 Download
+                    Download
                   </a>
                 </div>
               ) : msg.message.startsWith("http") ? (
@@ -242,25 +246,19 @@ const Chat = () => {
                   {msg.message}
                 </a>
               ) : (
-                <span className="whitespace-pre-wrap break-words overflow-auto">
-                  {msg.message}
-                </span>
+                <span className="whitespace-pre-wrap break-words overflow-auto">{msg.message}</span>
               )}
-              <span className="text-[9px] flex flex-col justify-end">
-                {moment(msg.createdAt).format("HH:mm")}
-              </span>
+              <span className="text-[9px] flex flex-col justify-end">{moment(msg.createdAt).format("HH:mm")}</span>
             </div>
           );
         })}
         <div ref={messagesEndRef} />
       </div>
-      {
-        loading && (
-          <div className="flex items-center justify-center">
-            <div className="w-5 h-5 border-2 mb-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        )
-      }
+      {loading && (
+        <div className="flex items-center justify-center">
+          <div className="w-5 h-5 border-2 mb-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
       <div className="p-4 bg-white flex items-center border-t fixed bottom-0 w-[65%] space-x-2">
         <div className="relative">
           <button onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
@@ -293,10 +291,7 @@ const Chat = () => {
           onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
         />
 
-        <button
-          onClick={handleSendMessage}
-          className="ml-2 p-2 bg-orange-400 text-white rounded-lg"
-        >
+        <button onClick={handleSendMessage} className="ml-2 p-2 bg-orange-400 text-white rounded-lg">
           <Send className="w-5 h-5" />
         </button>
       </div>

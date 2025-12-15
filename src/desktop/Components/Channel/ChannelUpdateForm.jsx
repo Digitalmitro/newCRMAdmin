@@ -3,7 +3,6 @@ import { useLocation } from "react-router-dom";
 import { useAuth } from "../../../context/authContext";
 import Select from "react-select";
 
-
 export default function ChannelUpdateForm({ groupUsers, members }) {
     const location = useLocation();
     const { getAllUsers } = useAuth();
@@ -38,6 +37,29 @@ export default function ChannelUpdateForm({ groupUsers, members }) {
     }, []);
 
     //(members);
+
+    const removeMember = async (memberId) => {
+        if (!memberId) return;
+        const confirm = window.confirm("Remove this member from the channel?");
+        if (!confirm) return;
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/api/${channelId}/remove-member`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ memberId })
+            });
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.message || "Failed to remove member");
+            }
+            setSelectedMembers((prev) => prev.filter((m) => m.value !== memberId));
+        } catch (error) {
+            alert(error.message || "Unable to remove member");
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -137,6 +159,26 @@ export default function ChannelUpdateForm({ groupUsers, members }) {
                 className="text-sm"
             />
         </div>
+
+        {members?.length ? (
+            <div className="space-y-2">
+                <p className="text-sm font-medium text-gray-700">Current Members</p>
+                <ul className="space-y-1 max-h-32 overflow-y-auto">
+                    {members.map((member) => (
+                        <li key={member?._id} className="flex items-center justify-between text-sm border p-1 rounded">
+                            <span>{member?.name}</span>
+                            <button
+                                type="button"
+                                className="text-red-500 hover:text-red-700 text-xs px-2 py-1 border border-red-300 rounded"
+                                onClick={() => removeMember(member?._id)}
+                            >
+                                Remove
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        ) : null}
 
         <button
             type="submit"
