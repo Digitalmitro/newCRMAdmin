@@ -41,7 +41,7 @@ function Home() {
     <div className="w-full">
       
       {/* Card Grid */}
-      <div className="grid grid-cols-3 gap-8 w-full p-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-8 w-full p-4 lg:p-6">
         <div className="p-4 border rounded-md text-center h-[150px] w-full flex flex-col justify-center items-center cursor-pointer" onClick={handleAttendaneList}>
           <img src={attendence} alt="" className="w-[50px] h-[50px]" />
           <p className="flex flex-col p-2 text-[12px]">

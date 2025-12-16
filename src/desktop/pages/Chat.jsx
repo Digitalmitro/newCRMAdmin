@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { Send, Paperclip } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   sendMessage,
   onMessageReceived,
@@ -20,6 +20,7 @@ const Chat = () => {
   const user = location.state;
   const receiverId = user?.id;
   const selectedUser = location?.state?.selectedUsers;
+  const navigate = useNavigate();
   const { userData } = useAuth();
   const senderId = userData?.userId;
   const [isOnline, setIsOnline] = useState(false);
@@ -181,9 +182,24 @@ const Chat = () => {
   const isImage = (url) => /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
   const isDocument = (url) => /\.(pdf|docx|xlsx|pptx)$/i.test(url);
 
+  // Guard: if no conversation selected (mobile entry)
+  if (!receiverId) {
+    return (
+      <div className="p-4 text-sm text-gray-700">
+        <p>Please pick a conversation from the list.</p>
+        <button
+          className="mt-3 px-3 py-2 bg-orange-500 text-white rounded text-xs"
+          onClick={() => navigate("/conversations")}
+        >
+          Go to conversations
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-4 w-full flex flex-col h-[500px]">
-      <div className="flex gap-4 mb-6 border-b pt-2 px-8 pb-2 items-center">
+    <div className="p-0 lg:p-4 w-full flex flex-col h-[calc(100vh-110px)] lg:h-[calc(100vh-80px)]">
+      <div className="flex gap-3 lg:gap-4 mb-4 lg:mb-6 border-b pt-2 px-3 lg:px-8 pb-2 items-center">
         <p className=" rounded-full border items-center  flex justify-center w-10 h-10 text-xl  text-white bg-orange-500">
           {user?.name?.charAt(0) || selectedUser?.[0]?.name?.charAt(0)}
         </p>
@@ -201,7 +217,7 @@ const Chat = () => {
         </div>
       </div>
 
-      <div className="flex-1 p-4 overflow-y-auto scrollable mb-10">
+      <div className="flex-1 px-3 lg:px-4 overflow-y-auto scrollable pb-2">
         {messages.map((msg, index) => {
           return (
             <div
@@ -259,41 +275,43 @@ const Chat = () => {
           <div className="w-5 h-5 border-2 mb-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
       )}
-      <div className="p-4 bg-white flex items-center border-t fixed bottom-0 w-[65%] space-x-2">
-        <div className="relative">
-          <button onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
-            <BsEmojiSmile size={22} className="cursor-pointer text-gray-500" />
+      <div className="p-3 lg:p-4 bg-white border-t w-full sticky bottom-0 left-0 right-0 z-10">
+        <div className="flex items-center w-full gap-2">
+          <div className="relative">
+            <button onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
+              <BsEmojiSmile size={22} className="cursor-pointer text-gray-500" />
+            </button>
+
+            {showEmojiPicker && (
+              <div className="absolute bottom-10 left-0 z-50">
+                <EmojiPicker onEmojiClick={handleEmojiClick} />
+              </div>
+            )}
+          </div>
+          <input
+            type="file"
+            onChange={(e) => setFile(e.target.files[0])}
+            className="hidden"
+            id="fileInput"
+          />
+          <label htmlFor="fileInput" className="cursor-pointer">
+            <Paperclip size={22} className="text-gray-500" />
+          </label>
+
+          <input
+            id="chatInput"
+            type="text"
+            className="flex-1 p-2 border rounded-lg outline-none text-[15px]"
+            placeholder="Type a message..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+          />
+
+          <button onClick={handleSendMessage} className="p-2 bg-orange-400 text-white rounded-lg shrink-0">
+            <Send className="w-5 h-5" />
           </button>
-
-          {showEmojiPicker && (
-            <div className="absolute bottom-10 left-0 z-50">
-              <EmojiPicker onEmojiClick={handleEmojiClick} />
-            </div>
-          )}
         </div>
-        <input
-          type="file"
-          onChange={(e) => setFile(e.target.files[0])}
-          className="hidden"
-          id="fileInput"
-        />
-        <label htmlFor="fileInput" className="cursor-pointer">
-          <Paperclip size={22} className="text-gray-500" />
-        </label>
-
-        <input
-          id="chatInput"
-          type="text"
-          className="flex-1 p-2 border rounded-lg outline-none text-[15px] w-full"
-          placeholder="Type a message..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-        />
-
-        <button onClick={handleSendMessage} className="ml-2 p-2 bg-orange-400 text-white rounded-lg">
-          <Send className="w-5 h-5" />
-        </button>
       </div>
     </div>
   );
