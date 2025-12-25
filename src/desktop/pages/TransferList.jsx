@@ -1,33 +1,54 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import moment from "moment";
 import { FaEye } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import { onSoftRefresh } from "../../utils/socket";
 function TransferList() {
   const [data, setData] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const lastSearchQueryRef = useRef("");
   const limit = 25;
   const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribe = onSoftRefresh((data) => {
       if (data.type === "Transfer_Employee") {
-        fetchData(currentPage);
+        fetchTransfers(currentPage, debouncedQuery);
       }
-
     });
 
-    fetchData(currentPage);
-    return () => unsubscribe(); // Cleanup on unmount
+    return () => unsubscribe();
+  }, [currentPage, debouncedQuery]);
 
-  }, [currentPage]);
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [searchQuery]);
 
-  const fetchData = async (page) => {
+  useEffect(() => {
+    if (debouncedQuery !== lastSearchQueryRef.current) {
+      lastSearchQueryRef.current = debouncedQuery;
+      if (currentPage !== 1) {
+        setCurrentPage(1);
+        return;
+      }
+    }
+    fetchTransfers(currentPage, debouncedQuery);
+  }, [currentPage, debouncedQuery]);
+
+  const fetchTransfers = async (page, query) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/transfer/all?page=${page}&limit=${limit}`,
+      const endpoint = query?.trim()
+        ? `/search?q=${encodeURIComponent(query.trim())}&page=${page}&limit=${limit}&scope=all`
+        : `/all?page=${page}&limit=${limit}`;
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/transfer${endpoint}`,
         {
           method: "GET",
           headers: {
@@ -78,6 +99,13 @@ function TransferList() {
     <div className=" p-4">
       <div className=" p-4 flex justify-between">
         <h2 className="text-[15px] font-medium pb-2">View Transfer</h2>
+        <input
+          type="text"
+          placeholder="Search..."
+          className="outline-none border-b-2 border-orange-500 rounded-lg px-4 w-[300px] py-1 text-gray-600"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
       </div>
       {/* Table */}
       <div className="overflow-x-auto mt-2 w-[950px] h-[400px]">

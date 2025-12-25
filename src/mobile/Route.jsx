@@ -3,6 +3,7 @@ import MobileLayout from "./layout/MobileLayout";
 import Home from "../desktop/pages/Home";
 import Attendance from "../desktop/pages/Attendance";
 import Chat from "../desktop/pages/Chat";
+import ChannelChat from "../desktop/pages/ChannelChat";
 import NotificationSystem from "../desktop/pages/Notification";
 import EmployeesActivity from "../desktop/pages/EmployeesActivity";
 import MobileConversations from "./pages/MobileConversations";
@@ -20,6 +21,7 @@ function MobileRouting() {
         <Route path="/attendance" element={<Attendance />} />
         <Route path="/conversations" element={<MobileConversations />} />
         <Route path="/chat" element={<Chat />} />
+        <Route path="/channelchat/:id" element={<ChannelChat />} />
         <Route path="/notification" element={<NotificationSystem />} />
         <Route path="/employee" element={<EmployeesActivity />} />
         <Route path="*" element={<Navigate to="/home" replace />} />

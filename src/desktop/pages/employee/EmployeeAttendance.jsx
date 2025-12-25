@@ -41,6 +41,9 @@ function EmployeeAttendance() {
   const halfDayCount = attendance.filter(
     (item) => item.workStatus === "Half Day"
   ).length;
+  const weekOffCount = attendance.filter(
+    (item) => item.workStatus === "Week-Off" || item.workStatus === "Weekend"
+  ).length;
 
   return (
     <div className="p-4">
@@ -77,6 +80,9 @@ function EmployeeAttendance() {
         </div>
         <div className="border border-gray-400 rounded px-4">
           Half Day : {halfDayCount}
+        </div>
+        <div className="border border-gray-400 rounded px-4">
+          Week-Off : {weekOffCount}
         </div>
       </div>
       <div className=" w-full h-[400px] overflow-auto">

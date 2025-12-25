@@ -32,6 +32,24 @@ function Sidebarpart() {
   const [channels, setChannels] = useState([]);
   const { getAllRecentUsers, userData } = useAuth();
   const [openChatId, setOpenChatId] = useState(null);
+  const [adminProfile, setAdminProfile] = useState(() => {
+    const stored = localStorage.getItem("admin");
+    if (!stored) return null;
+    try {
+      return JSON.parse(stored);
+    } catch (error) {
+      return null;
+    }
+  });
+  const [isEditAdminOpen, setIsEditAdminOpen] = useState(false);
+  const [adminForm, setAdminForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+  });
+  const [adminSaving, setAdminSaving] = useState(false);
+  const [adminError, setAdminError] = useState("");
   const navigate = useNavigate();
 
   const channel = async () => {
@@ -48,9 +66,42 @@ function Sidebarpart() {
     setEmployees(users);
   };
 
+  const loadAdminProfile = async () => {
+    const stored = localStorage.getItem("admin");
+    if (stored) {
+      try {
+        setAdminProfile(JSON.parse(stored));
+      } catch (error) {
+        setAdminProfile(null);
+      }
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_API}/auth/admin/profile`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        if (data?.admin) {
+          setAdminProfile(data.admin);
+          localStorage.setItem("admin", JSON.stringify(data.admin));
+        }
+      }
+    } catch (error) {
+      //(error);
+    }
+  };
+
   useEffect(() => {
     channel();
     allUsers();
+    loadAdminProfile();
     socket.on("updateUnread", async () => {
       allUsers()
     });
@@ -119,6 +170,80 @@ function Sidebarpart() {
         id,
       },
     });
+  };
+
+  const handleEditAdminOpen = () => {
+    setAdminError("");
+    setAdminForm({
+      name: adminProfile?.name || "",
+      email: adminProfile?.email || "",
+      phone: adminProfile?.phone || "",
+      password: "",
+    });
+    setIsEditAdminOpen(true);
+  };
+
+  const handleEditAdminClose = () => {
+    setIsEditAdminOpen(false);
+    setAdminError("");
+  };
+
+  const handleAdminInputChange = (e) => {
+    const { name, value } = e.target;
+    setAdminForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAdminSave = async () => {
+    if (adminSaving) return;
+    setAdminSaving(true);
+    setAdminError("");
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setAdminError("Please log in again.");
+      setAdminSaving(false);
+      return;
+    }
+
+    const payload = {
+      name: adminForm.name,
+      email: adminForm.email,
+      phone: adminForm.phone,
+    };
+    if (adminForm.password) {
+      payload.password = adminForm.password;
+    }
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_API}/auth/admin/profile`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        setAdminError(data?.message || "Unable to update profile.");
+        setAdminSaving(false);
+        return;
+      }
+      const data = await response.json();
+      const updated = data?.admin || null;
+      if (updated) {
+        setAdminProfile(updated);
+        localStorage.setItem("admin", JSON.stringify(updated));
+      }
+      setIsEditAdminOpen(false);
+    } catch (error) {
+      setAdminError("Unable to update profile.");
+    } finally {
+      setAdminSaving(false);
+    }
   };
 
   //(employees);
@@ -195,10 +320,12 @@ function Sidebarpart() {
       <div className="bg-gray-200 w-[250px] p-4 border border-orange-400">
         <div className="flex justify-between items-center pt-4 mb-4">
           <h2 className="text-[18px] font-medium   flex gap-2">
-            Admin
+            {adminProfile?.name || "Admin"}
             <img src={arrow} alt="" className="w-[8px] pt-1" />
           </h2>
-          <img src={edit} alt="" className="w-[10px] h-[10px]" />
+          <button type="button" onClick={handleEditAdminOpen}>
+            <img src={edit} alt="Edit admin profile" className="w-[10px] h-[10px]" />
+          </button>
         </div>
 
         {/* Channels Section */}
@@ -244,8 +371,8 @@ function Sidebarpart() {
           <h3 className="text-[15px] font-bold text-gray-600 flex gap-2">
             Messages <img src={arrow} alt="" className="w-[8px] pt-1" />
           </h3>
-          <ul className="mt-2">
-            {employees?.slice(0, 4).map((user, i) => (
+          <ul className="mt-2 max-h-[260px] overflow-y-auto pr-1">
+            {employees?.map((user, i) => (
               <li
                 key={i}
                 className="block p-2 text-gray-700 text-[14px] font-medium cursor-pointer"
@@ -269,13 +396,14 @@ function Sidebarpart() {
                 </p>
               </li>
             ))}
-            <li
-              className="block p-2 text-gray-700 text-[15px] cursor-pointer"
-              onClick={handleCowrokers}
-            >
-              + Add Coworker
-            </li>
           </ul>
+          <button
+            type="button"
+            className="block p-2 text-gray-700 text-[15px] cursor-pointer"
+            onClick={handleCowrokers}
+          >
+            + Add Coworker
+          </button>
         </div>
 
         {/* Notes Section */}
@@ -283,8 +411,8 @@ function Sidebarpart() {
           <h3 className="text-[15px] font-bold text-gray-600 flex gap-2">
             Notes <img src={arrow} alt="" className="w-[8px] pt-1" />
           </h3>
-          <ul className="mt-2">
-            {employees?.slice(0, 4).map((user, i) => (
+          <ul className="mt-2 max-h-[260px] overflow-y-auto pr-1">
+            {employees?.map((user, i) => (
               <li
                 key={i}
                 className="block p-2 text-gray-700 text-[14px] font-medium cursor-pointer"
@@ -304,15 +432,92 @@ function Sidebarpart() {
                 </p>
               </li>
             ))}
-            <li
-              className="block p-2 text-gray-700 text-[15px] cursor-pointer"
-              onClick={handleCowrokersNotes}
-            >
-              + Add Coworker
-            </li>
           </ul>
+          <button
+            type="button"
+            className="block p-2 text-gray-700 text-[15px] cursor-pointer"
+            onClick={handleCowrokersNotes}
+          >
+            + Add Coworker
+          </button>
         </div>
       </div>
+
+      {isEditAdminOpen && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
+          <div className="bg-white w-full max-w-md rounded-lg shadow-lg p-4">
+            <div className="flex items-center justify-between border-b pb-2">
+              <h3 className="text-sm font-semibold">Edit Admin Profile</h3>
+              <button type="button" onClick={handleEditAdminClose} className="text-gray-500">
+                &times;
+              </button>
+            </div>
+            {adminError && (
+              <p className="text-xs text-red-500 mt-2">{adminError}</p>
+            )}
+            <div className="mt-3 space-y-3">
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Name</label>
+                <input
+                  name="name"
+                  type="text"
+                  value={adminForm.name}
+                  onChange={handleAdminInputChange}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Email</label>
+                <input
+                  name="email"
+                  type="email"
+                  value={adminForm.email}
+                  onChange={handleAdminInputChange}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Phone</label>
+                <input
+                  name="phone"
+                  type="text"
+                  value={adminForm.phone}
+                  onChange={handleAdminInputChange}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Password</label>
+                <input
+                  name="password"
+                  type="password"
+                  value={adminForm.password}
+                  onChange={handleAdminInputChange}
+                  placeholder="Leave blank to keep current"
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm outline-none"
+                />
+              </div>
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={handleEditAdminClose}
+                className="px-3 py-2 text-sm border border-gray-300 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleAdminSave}
+                className="px-3 py-2 text-sm bg-orange-500 text-white rounded"
+                disabled={adminSaving}
+              >
+                {adminSaving ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

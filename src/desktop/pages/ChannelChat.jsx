@@ -15,9 +15,8 @@ import {
   joinChannel,
 } from "../../utils/socket"; // Socket functions
 import axios from "axios";
-import { BsThreeDotsVertical } from "react-icons/bs";
 import ChannelUpdateForm from "../Components/Channel/ChannelUpdateForm";
-import { downloadImage } from "../../utils/helper";
+import { downloadFile, downloadImage, getFileNameFromUrl } from "../../utils/helper";
 const ChannelChat = () => {
   const { userData } = useAuth();
   const location = useLocation();
@@ -27,6 +26,7 @@ const ChannelChat = () => {
   const [channelInfo, setChannelsInfo] = useState();
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [file, setFile] = useState(null);
+  const [filePreviewUrl, setFilePreviewUrl] = useState(null);
   const [modal, setModal] = useState(false);
   const [channelUpdateModal, setChannelUpdateModal] = useState(false);
   const [input, setInput] = useState("");
@@ -36,6 +36,7 @@ const ChannelChat = () => {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
   const handleShare = () => {
     setModal(true);
   };
@@ -102,15 +103,34 @@ const ChannelChat = () => {
   // ✅ Listen for new messages via Socket.io
   useEffect(() => {
     const unsubscribe = onChannelMessageReceived((msg) => {
-      setMessages((prev) => [...prev, msg]);
+      if (String(msg?.channelId) !== String(groupUsers?.id)) return;
+      setMessages((prev) => {
+        if (msg?._id && prev.some((item) => item._id === msg._id)) {
+          return prev;
+        }
+        return [...prev, msg];
+      });
     });
 
-    return unsubscribe; // 💥 Clean it up
-  }, []);
+    return unsubscribe;
+  }, [groupUsers?.id]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+  useEffect(() => {
+    if (!file) {
+      setFilePreviewUrl(null);
+      return;
+    }
+    if (!file.type?.startsWith("image/")) {
+      setFilePreviewUrl(null);
+      return;
+    }
+    const previewUrl = URL.createObjectURL(file);
+    setFilePreviewUrl(previewUrl);
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [file]);
   const uploadFile = async (file) => {
     setUploading(true);
     const formData = new FormData();
@@ -134,16 +154,23 @@ const ChannelChat = () => {
   };
   // ✅ Handle sending a message
   const handleSendMessage = async () => {
+    if (loading || uploading) return;
     if (!input.trim() && !file) return;
     let messageContent = input.trim();
     if (file) {
-      setloading(true)
+      setloading(true);
       const fileUrl = await uploadFile(file);
 
-      if (!fileUrl) return;
+      if (!fileUrl) {
+        setloading(false);
+        return;
+      }
       messageContent = fileUrl.fileUrl;
       setFile(null);
-      setloading(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      setloading(false);
     }
     const newMessage = {
       sender: senderId, // Replace with actual user ID
@@ -152,16 +179,16 @@ const ChannelChat = () => {
       createdAt: new Date(),
     };
 
-
     try {
       await axios.post(`${import.meta.env.VITE_BACKEND_API}/channels/send`, newMessage);
       sendChannelMessage(newMessage.channelId, newMessage.sender, newMessage.message);
-      setMessages([...messages, newMessage]); // Optimistic UI update
       setInput("");
     } catch (error) {
-      console.error("❌ Error sending message:", error);
+      console.error("Error sending message:", error);
     }
   };
+
+
 
 
 
@@ -205,14 +232,23 @@ const ChannelChat = () => {
     }, 0);
   };
 
-  const isImage = (url) => /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
-  const isDocument = (url) => /\.(pdf|docx|xlsx|pptx)$/i.test(url);
+  const isImage = (url) => /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(url);
+  const isDocument = (url) => /\.(pdf|docx|doc|xlsx|xls|pptx|ppt|csv|txt|zip|rar)$/i.test(url);
+  const isLikelyAttachment = (url) =>
+    url?.startsWith("http") && (isImage(url) || isDocument(url) || url.includes("cloudinary"));
+  const formatFileSize = (size) => {
+    if (!size) return "";
+    const kb = size / 1024;
+    if (kb < 1024) return `${kb.toFixed(1)} KB`;
+    return `${(kb / 1024).toFixed(1)} MB`;
+  };
+  const isSending = loading || uploading;
 
 
   return (
-    <div className="p-4 w-full flex flex-col h-[500px]">
+    <div className="p-0 lg:p-4 w-full flex flex-col h-[calc(100vh-110px)] lg:h-[calc(100vh-80px)]">
       {/* Header */}
-      <div className="flex  justify-between mb-6 border-b pt-2 px-8 pb-2 w-full">
+      <div className="flex justify-between items-center mb-4 lg:mb-6 border-b pt-2 px-3 lg:px-8 pb-2 w-full">
         <div className="flex gap-4">
           <div className="flex items-center gap-4">
             <p className="rounded-full border items-center text-[12px] flex justify-center w-10 h-10 font-medium text-white bg-orange-500">
@@ -308,15 +344,17 @@ const ChannelChat = () => {
       </div>
 
       {/* Chat Messages */}
-      <div className="flex-1 p-4 overflow-y-auto scrollable mb-10">
+      <div className="flex-1 px-3 lg:px-4 overflow-y-auto scrollable pb-2">
         {messages.map((msg, index) => {
+          const isSelf = String(msg.sender) === String(senderId);
+          const senderLabel = isSelf ? "You" : getSenderName(String(msg.sender));
 
           //(`${msg.message}?fl_attachment`)
           return (
             <div
               key={index}
-              className={`p-2 max-w-xs rounded-lg mb-2 flex justify-between 
-                      ${msg.sender === senderId
+              className={`p-2 max-w-xs rounded-lg mb-2 flex justify-between gap-2 
+                      ${isSelf
                   ? "bg-gradient-to-r from-orange-500 to-orange-400 text-white ml-auto"
                   : "bg-gradient-to-l from-gray-500 to-gray-700 text-white"
                 }`}
@@ -327,34 +365,35 @@ const ChannelChat = () => {
                   }px`,
               }}
             >
-              {isImage(msg.message) ? (
-                <>
-                  <img
-                    src={msg.message}
-                    alt="Sent Image"
-                    className="w-45 h-auto rounded-lg"
-                  />
-                  <button
-                    onClick={() => downloadImage(msg.message)}
-                    className="px-2 py-1 bg-blue-000 text-white text-xs rounded-full text-center mt-1 self-start shadow-md"
-                  >
-                    📥 Download
-                  </button>
-                </>
-              ) : isDocument(msg.message) ? (
-                <div className="flex items-center gap-2 bg-gray-200 text-black p-2 rounded-lg">
-                  <span className="truncate w-20">
-                    {msg.message.split("/").pop()}
-                  </span>
-                  <a
-                    href={msg.message}
-                    download
-                    className="px-2 py-1 bg-blue-500 text-white text-xs rounded-full text-center mt-1 self-start shadow-md"
-                  >
-                    📥 Download
-                  </a>
-                </div>
-              ) : msg.message.startsWith("http") ? (
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-semibold opacity-80">{senderLabel}</span>
+                {isImage(msg.message) ? (
+                  <>
+                    <img
+                      src={msg.message}
+                      alt="Sent Image"
+                      className="w-45 h-auto rounded-lg"
+                    />
+                    <button
+                      onClick={() => downloadImage(msg.message)}
+                      className="px-2 py-1 bg-blue-000 text-white text-xs rounded-full text-center mt-1 self-start shadow-md"
+                    >
+                      Download
+                    </button>
+                  </>
+                ) : isLikelyAttachment(msg.message) ? (
+                  <div className="flex items-center gap-2 bg-gray-200 text-black p-2 rounded-lg">
+                    <span className="truncate w-32">
+                      {getFileNameFromUrl(msg.message)}
+                    </span>
+                    <button
+                      onClick={() => downloadFile(msg.message)}
+                      className="px-2 py-1 bg-blue-500 text-white text-xs rounded-full text-center mt-1 self-start shadow-md"
+                    >
+                      Download
+                    </button>
+                  </div>
+                ) : msg.message.startsWith("http") ? (
                 <a
                   href={msg.message}
                   target="_blank"
@@ -368,6 +407,7 @@ const ChannelChat = () => {
                   {msg.message}
                 </span>
               )}
+              </div>
               <span className="text-[9px] flex flex-col justify-end">
                 {moment(msg.createdAt).format("HH:mm")}
               </span>
@@ -384,7 +424,35 @@ const ChannelChat = () => {
         )
       }
       {/* Message Input */}
-      <div className="p-4 bg-white flex items-center border-t fixed bottom-0 w-[65%] space-x-2">
+      <div className="p-3 lg:p-4 bg-white border-t w-full sticky bottom-0 left-0 right-0 z-10">
+        {file && (
+          <div className="mb-2 flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+            {filePreviewUrl ? (
+              <img src={filePreviewUrl} alt="Selected file" className="w-10 h-10 rounded object-cover" />
+            ) : (
+              <div className="w-10 h-10 rounded bg-gray-200 text-[10px] font-semibold text-gray-600 flex items-center justify-center">
+                FILE
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium truncate">{file.name}</p>
+              <p className="text-[10px] text-gray-500">{formatFileSize(file.size)}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setFile(null);
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = "";
+                }
+              }}
+              className="text-xs text-red-500"
+            >
+              Remove
+            </button>
+          </div>
+        )}
+        <div className="flex items-center w-full gap-2">
         <div className="relative">
           <button onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
             <BsEmojiSmile size={22} className="cursor-pointer text-gray-500" />
@@ -397,8 +465,9 @@ const ChannelChat = () => {
           )}
         </div>
         <input
+          ref={fileInputRef}
           type="file"
-          onChange={(e) => setFile(e.target.files[0])}
+          onChange={(e) => setFile(e.target.files[0] || null)}
           className="hidden"
           id="fileInput"
         />
@@ -408,18 +477,21 @@ const ChannelChat = () => {
 
         <input
           type="text"
-          className="flex-1 p-2 border rounded-lg outline-none text-[15px] w-full"
+          className="flex-1 p-2 border rounded-lg outline-none text-[15px]"
           placeholder="Type a message..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+          disabled={isSending}
         />
         <button
           onClick={handleSendMessage}
-          className="ml-2 p-2 bg-orange-400 text-white rounded-lg"
+          className={`p-2 bg-orange-400 text-white rounded-lg shrink-0 ${isSending ? "opacity-60 cursor-not-allowed" : ""}`}
+          disabled={isSending}
         >
           <Send className="w-5 h-5" />
         </button>
+        </div>
       </div>
     </div>
   );

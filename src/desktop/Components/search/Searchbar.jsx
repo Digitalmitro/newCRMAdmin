@@ -31,29 +31,33 @@ function Searchbar() {
     setUnreadCount(0)
   };
 
-  function handleNotification(senderId) {
-    const clickedNotification = notification.find(item => item.sender === senderId)
-//(clickedNotification);
+  function handleNotification(notify) {
+    if (!notify) return;
 
-  
-    if (clickedNotification.type === "DM") {
+    if (notify.type === "CONCERN" || notify.type === "CONCERN_STATUS") {
+      navigate("/concern");
+      return;
+    }
+
+    if (notify.type === "DM") {
       navigate("/chat", {
         state: {
-          name: clickedNotification?.name,
-          id: senderId
-        }
-      })
+          name: notify?.name,
+          id: notify?.sender,
+        },
+      });
       return;
-   }
-    navigate(`/channelchat/${senderId}`, {
+    }
+
+    if (!notify?.sender) return;
+
+    navigate(`/channelchat/${notify.sender}`, {
       state: {
-        name: clickedNotification?.title,
-        description: clickedNotification?.description,
-        id: senderId
-      }
-    })
-
-
+        name: notify?.title,
+        description: notify?.description,
+        id: notify?.sender,
+      },
+    });
   }
 
   const handleLogout = () => {
@@ -133,7 +137,7 @@ function Searchbar() {
         <div className="mt-4 space-y-3">
           {notification.length > 0 ? (
             notification.map((notify, i) => (
-              <div key={i} className="p-3 border border-gray-300 rounded-lg shadow-sm hover:bg-gray-100 transition flex justify-between items-center cursor-pointer" onClick={() => handleNotification(notify.sender)}>
+              <div key={i} className="p-3 border border-gray-300 rounded-lg shadow-sm hover:bg-gray-100 transition flex justify-between items-center cursor-pointer" onClick={() => handleNotification(notify)}>
                 <img src={logo} alt="" className="w-[40px]" />
                 <div >
 

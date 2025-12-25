@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../context/authContext";
-import { FaEye } from "react-icons/fa";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +14,7 @@ function EmployeesActivity() {
   const [search, setSearch] = useState("");
   const { allUsers } = useAuth();
   const [createEmpOpen, setCreateEmpOpen] = useState(false);
+  const [showCreatePassword, setShowCreatePassword] = useState(false);
   const token = localStorage.getItem("token");
   const [newEmp, setNewEmp] = useState({
     name: "",
@@ -21,6 +22,7 @@ function EmployeesActivity() {
     email: "",
     phone: "",
     password: "",
+    employeeType: "",
     type: "",
   });
   const allEmployees = async () => {
@@ -74,10 +76,12 @@ function EmployeesActivity() {
   );
   const handleCreate = () => {
     setCreateEmpOpen(true);
+    setShowCreatePassword(false);
   };
 
   const handleClose = () => {
     setCreateEmpOpen(false);
+    setShowCreatePassword(false);
   };
 
   const handleChange = (e) => {
@@ -116,10 +120,12 @@ function EmployeesActivity() {
         email: "",
         phone: "",
         password: "",
+        employeeType: "",
         type: "",
       });
 
       setCreateEmpOpen(false);
+      setShowCreatePassword(false);
     } catch (error) {
       console.error("Validation failed:", error);
     }
@@ -168,7 +174,8 @@ function EmployeesActivity() {
             <tr className="font-semibold text-center text-[15px] ">
               <th className="border border-gray-300 p-2">Name</th>
               {/* <th className="border border-gray-300 p-2">Alice Name</th> */}
-              <th className="border border-gray-300 p-2">Type</th>
+              <th className="border border-gray-300 p-2">Employee Type</th>
+              <th className="border border-gray-300 p-2">Shift</th>
               <th className="border border-gray-300 p-2">Email</th>
               <th className="border border-gray-300 p-2">Phone</th>
               <th className="border border-gray-300 p-2">CallBack</th>
@@ -185,6 +192,9 @@ function EmployeesActivity() {
                 {/* <td className="border border-gray-300 px-2">
                   {data?.aliceName}
                 </td> */}
+                <td className="border border-gray-300 px-2">
+                  {data?.employeeType || "Full-Time"}
+                </td>
                 <td className="border border-gray-300 px-2">{data?.type}</td>
                 <td className="border border-gray-300 px-2">{data?.email}</td>
                 <td className="border border-gray-300 px-2">{data?.phone}</td>
@@ -260,22 +270,22 @@ function EmployeesActivity() {
                   />
                 </div>
                 <div className="mb-3">
-                <label className="block text-sm text-[15px] font-[500] text-gray-600">
-                  <span className="text-red-500">*</span> Employee Type
-                </label>
-                <select
-                  className="border text-gray-800 text-[14px] mt-2 border-gray-400 px-2 pt-1 pb-1 w-[220px] rounded outline-none"
-                  value={newEmp.type || ""}
-                  id="type"
-                  name="type"
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Select Type</option>
-                  <option value="Day">Day</option>
-                  <option value="Night">Night</option>
-                </select>
-              </div>
+                  <label className="block text-sm text-[15px] font-[500] text-gray-600">
+                    <span className="text-red-500">*</span> Employee Type
+                  </label>
+                  <select
+                    className="border text-gray-800 text-[14px] mt-2 border-gray-400 px-2 pt-1 pb-1 w-[220px] rounded outline-none"
+                    value={newEmp.employeeType || ""}
+                    id="employeeType"
+                    name="employeeType"
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Select Type</option>
+                    <option value="Full-Time">Full-Time</option>
+                    <option value="Part-Time">Part-Time</option>
+                  </select>
+                </div>
               </div>
               <div className="mb-3">
                 <label className="block text-sm text-[15px] font-[500] text-gray-600">
@@ -290,6 +300,23 @@ function EmployeesActivity() {
                   onChange={handleChange}
                   required
                 />
+              </div>
+              <div className="mb-3">
+                <label className="block text-sm text-[15px] font-[500] text-gray-600">
+                  <span className="text-red-500">*</span> Shift
+                </label>
+                <select
+                  className="border text-gray-800 text-[14px] mt-2 border-gray-400 px-2 pt-1 pb-1 w-[455px] rounded outline-none"
+                  value={newEmp.type || ""}
+                  id="type"
+                  name="type"
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select Shift</option>
+                  <option value="Day">Day</option>
+                  <option value="Night">Night</option>
+                </select>
               </div>
               <div className="flex gap-4 mb-3">
                 <div className="mb-3 ">
@@ -310,15 +337,26 @@ function EmployeesActivity() {
                   <label className="block text-sm text-[15px] font-[500] text-gray-600">
                     <span className="text-red-500">*</span> Password
                   </label>
-                  <input
-                    type="password"
-                    name="password"
-                    value={newEmp.password}
-                    onChange={handleChange}
-                    className="border text-gray-800 text-[14px] mt-2 border-gray-400 px-2 w-[220px] pt-1 pb-1 rounded outline-none"
-                    placeholder="Enter Password"
-                    required
-                  />
+                  <div className="relative">
+                    <input
+                      type={showCreatePassword ? "text" : "password"}
+                      name="password"
+                      value={newEmp.password}
+                      onChange={handleChange}
+                      className="border text-gray-800 text-[14px] mt-2 border-gray-400 px-2 pr-8 w-[220px] pt-1 pb-1 rounded outline-none"
+                      placeholder="Enter Password"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowCreatePassword((prev) => !prev)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
+                      aria-label={showCreatePassword ? "Hide password" : "Show password"}
+                      title={showCreatePassword ? "Hide password" : "Show password"}
+                    >
+                      {showCreatePassword ? <FaEyeSlash size={14} /> : <FaEye size={14} />}
+                    </button>
+                  </div>
                 </div>
               </div>
               <div className="flex space-x-4 mt-4">

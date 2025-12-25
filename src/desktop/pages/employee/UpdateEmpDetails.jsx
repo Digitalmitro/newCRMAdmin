@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 function UpdateEmpDetails() {
-    const navigate=useNavigate()
+  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
   const [data, setData] = useState({
     name: "",
     aliceName: "",
     email: "",
     phone: "",
     type: "",
+    employeeType: "",
   });
   const { id } = useParams();
 
@@ -25,8 +28,12 @@ function UpdateEmpDetails() {
     );
     if (response.ok) {
       const data = await response.json();
-     
-      setData(data);
+
+      setData({
+        ...data,
+        employeeType: data?.employeeType || "Full-Time",
+        type: data?.type || "Day",
+      });
     }
   };
 
@@ -86,17 +93,18 @@ function UpdateEmpDetails() {
           />
         </div>
         <div className="mb-4">
-        <label className="block text-gray-600 mb-1">Employee Type</label>
-        <select
-          className="w-full px-3 py-2 border rounded-md outline-none border-gray-300"
-          value={data?.type}
-          name="type"
-          onChange={handleChange} // Added this
-        >
-          <option value="Night">Night</option>
-          <option value="Day">Day</option>
-        </select>
-      </div>
+          <label className="block text-gray-600 mb-1">Employee Type</label>
+          <select
+            className="w-full px-3 py-2 border rounded-md outline-none border-gray-300"
+            value={data?.employeeType}
+            name="employeeType"
+            onChange={handleChange}
+          >
+            <option value="">Select</option>
+            <option value="Full-Time">Full-Time</option>
+            <option value="Part-Time">Part-Time</option>
+          </select>
+        </div>
       </div>
 
       <div className="mb-4">
@@ -112,6 +120,19 @@ function UpdateEmpDetails() {
 
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
+          <label className="block text-gray-600 mb-1">Shift</label>
+          <select
+            className="w-full px-3 py-2 border rounded-md outline-none border-gray-300"
+            value={data?.type}
+            name="type"
+            onChange={handleChange}
+          >
+            <option value="">Select</option>
+            <option value="Day">Day</option>
+            <option value="Night">Night</option>
+          </select>
+        </div>
+        <div>
           <label className="block text-gray-600 mb-1">Phone</label>
           <input
             name="phone"
@@ -121,14 +142,28 @@ function UpdateEmpDetails() {
             className="w-full px-3 py-2 border rounded-md outline-none border-gray-300"
           />
         </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
           <label className="block text-gray-600 mb-1">Password</label>
-          <input
-            name="password"
-            type="password"
-            placeholder="Enter Password"
-            className="w-full px-3 py-2 border rounded-md outline-none border-gray-300"
-          />
+          <div className="relative">
+            <input
+              name="password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Enter Password"
+              className="w-full px-3 py-2 pr-10 border rounded-md outline-none border-gray-300"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              title={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </button>
+          </div>
         </div>
       </div>
 
