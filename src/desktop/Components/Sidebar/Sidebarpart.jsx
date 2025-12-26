@@ -249,8 +249,8 @@ function Sidebarpart() {
   //(employees);
 
   return (
-    <div className="  flex ">
-      <div className="px-3 pt-2 border border-orange-400">
+    <div className="flex h-screen overflow-hidden">
+      <div className="px-3 pt-2 border border-orange-400 h-screen">
         {/* Navigation Links */}
         <nav className="flex flex-col gap-1  items-center">
           <Link to="/" className="flex items-center">
@@ -317,7 +317,7 @@ function Sidebarpart() {
         </nav>
       </div>
 
-      <div className="bg-gray-200 w-[250px] p-4 border border-orange-400">
+      <div className="bg-gray-200 w-[250px] p-4 border border-orange-400 h-screen overflow-y-auto">
         <div className="flex justify-between items-center pt-4 mb-4">
           <h2 className="text-[18px] font-medium   flex gap-2">
             {adminProfile?.name || "Admin"}
@@ -371,7 +371,7 @@ function Sidebarpart() {
           <h3 className="text-[15px] font-bold text-gray-600 flex gap-2">
             Messages <img src={arrow} alt="" className="w-[8px] pt-1" />
           </h3>
-          <ul className="mt-2 max-h-[260px] overflow-y-auto pr-1">
+          <ul className="mt-2 max-h-[260px] overflow-y-auto pr-1 hide-scrollbar">
             {employees?.map((user, i) => (
               <li
                 key={i}
@@ -411,7 +411,7 @@ function Sidebarpart() {
           <h3 className="text-[15px] font-bold text-gray-600 flex gap-2">
             Notes <img src={arrow} alt="" className="w-[8px] pt-1" />
           </h3>
-          <ul className="mt-2 max-h-[260px] overflow-y-auto pr-1">
+          <ul className="mt-2 max-h-[260px] overflow-y-auto pr-1 hide-scrollbar">
             {employees?.map((user, i) => (
               <li
                 key={i}
