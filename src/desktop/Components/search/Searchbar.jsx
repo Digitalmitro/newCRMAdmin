@@ -70,6 +70,26 @@ function Searchbar() {
     setNotification(notification.filter((_, i) => i !== index));
   }
 
+  const clearAllNotifications = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_API}/notification/clear-notifications`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response.ok) {
+        setNotification([]);
+        setUnreadCount(0);
+      }
+    } catch (error) {
+      //(error);
+    }
+  };
+
   useEffect(() => {
     const notification = async () => {
       try {
@@ -128,12 +148,12 @@ function Searchbar() {
         className={`fixed top-0 right-0 w-80 h-full bg-white shadow-lg transition-transform transform ${isSidebarOpen ? "translate-x-0" : "translate-x-full"
           } p-4 z-50`}
       >
-        <div className="flex justify-between items-center pb-4 border-b">
-          <h2 className="text-lg font-semibold">Notifications</h2>
-          <button className="text-gray-600" onClick={toggleSidebar}>
-            <IoIosClose size={32} />
-          </button>
-        </div>
+          <div className="flex justify-between items-center pb-4 border-b">
+            <h2 className="text-lg font-semibold">Notifications</h2>
+            <button className="text-gray-600" onClick={clearAllNotifications} title="Clear all">
+              <IoIosClose size={32} />
+            </button>
+          </div>
         <div className="mt-4 space-y-3">
           {notification.length > 0 ? (
             notification.map((notify, i) => (

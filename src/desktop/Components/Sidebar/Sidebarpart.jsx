@@ -32,6 +32,7 @@ function Sidebarpart() {
   const [channels, setChannels] = useState([]);
   const { getAllRecentUsers, userData } = useAuth();
   const [openChatId, setOpenChatId] = useState(null);
+  const [pendingConcerns, setPendingConcerns] = useState(0);
   const [adminProfile, setAdminProfile] = useState(() => {
     const stored = localStorage.getItem("admin");
     if (!stored) return null;
@@ -105,9 +106,28 @@ function Sidebarpart() {
     socket.on("updateUnread", async () => {
       allUsers()
     });
+    const fetchPendingConcerns = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_API}/concern/pending-count`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setPendingConcerns(data?.count || 0);
+        }
+      } catch (error) {
+        //(error);
+      }
+    };
+    fetchPendingConcerns();
+    socket.on("soft-refresh", fetchPendingConcerns);
 
     return () => {
       socket.off("updateUnread");
+      socket.off("soft-refresh", fetchPendingConcerns);
       socket.disconnect();
     };
   }, []);
@@ -303,7 +323,14 @@ function Sidebarpart() {
           <Link to="/concern" className="flex items-center gap-2 p-2 ">
             <div className="flex space-x-2 flex-col   items-center">
               <TbBrandDatabricks size={23} />
-              <p className="text-[12px] font-semibold">Concern</p>
+              <div className="relative">
+                <p className="text-[12px] font-semibold">Concern</p>
+                {pendingConcerns > 0 && (
+                  <span className="absolute -top-2 -right-4 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center">
+                    {pendingConcerns}
+                  </span>
+                )}
+              </div>
             </div>
           </Link>
           <Link to="/notification" className="flex items-center gap-2 p-2">

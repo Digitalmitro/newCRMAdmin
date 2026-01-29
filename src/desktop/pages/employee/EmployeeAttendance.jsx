@@ -4,16 +4,19 @@ import moment from "moment";
 
 function EmployeeAttendance() {
   const [attendance, setAttendance] = useState([]);
-  const [month, setMonth] = useState(new Date().getMonth() + 1);
-  const [cal, setCal] = useState("");
+  const [rangeStart, setRangeStart] = useState("");
+  const [rangeEnd, setRangeEnd] = useState("");
   const { id } = useParams();
   const token = localStorage.getItem("token");
 
   const fetchAttendance = async () => {
     try {
       let url = `${import.meta.env.VITE_BACKEND_API}/attendance/list/${id}`;
-      if (month) url += `?month=${month}`;
-      if (cal) url += month ? `&date=${cal}` : `?date=${cal}`;
+      const params = new URLSearchParams();
+      if (rangeStart) params.append("startDate", rangeStart);
+      if (rangeEnd) params.append("endDate", rangeEnd);
+      const query = params.toString();
+      if (query) url += `?${query}`;
 
       const response = await fetch(url, {
         headers: {
@@ -32,7 +35,7 @@ function EmployeeAttendance() {
 
   useEffect(() => {
     fetchAttendance();
-  }, [month, cal]);
+  }, [rangeStart, rangeEnd]);
 
   const lateCount = attendance.filter((item) => item.status === "Late").length;
   const absentCount = attendance.filter(
@@ -47,29 +50,26 @@ function EmployeeAttendance() {
 
   return (
     <div className="p-4">
-      <div className="p-4 flex justify-start space-x-6">
-      <select
-          name="month"
-          id="month"
-          className="border border-orange-400 rounded px-2 pt-0.5 pb-0.5"
-          onChange={(e) => setMonth(e.target.value)}
-          value={month}
-        >
-          <option value="">Select Month</option>
-          {Array.from({ length: 12 }, (_, i) => (
-            <option key={i + 1} value={i + 1}>
-              {moment().month(i).format("MMM")}
-            </option>
-          ))}
-        </select>
-        <input
-          type="date"
-          name="calender"
-          id="calender"
-          className="border border-orange-400 rounded px-2 pt-0.5 pb-0.5 outline-none"
-          onChange={(e) => setCal(e.target.value)}
-          value={cal}
-        />
+      <div className="p-4 flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-2">
+          <input
+            type="date"
+            name="rangeStart"
+            id="rangeStart"
+            className="border border-orange-400 rounded px-2 pt-0.5 pb-0.5 outline-none"
+            onChange={(e) => setRangeStart(e.target.value)}
+            value={rangeStart}
+          />
+          <span className="text-sm text-gray-500">to</span>
+          <input
+            type="date"
+            name="rangeEnd"
+            id="rangeEnd"
+            className="border border-orange-400 rounded px-2 pt-0.5 pb-0.5 outline-none"
+            onChange={(e) => setRangeEnd(e.target.value)}
+            value={rangeEnd}
+          />
+        </div>
       </div>
       <div className="flex justify-end space-x-5 text-[13px] p-4">
         <div className="border border-gray-400 rounded px-4">
