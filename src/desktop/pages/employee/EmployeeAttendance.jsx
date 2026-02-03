@@ -4,6 +4,7 @@ import moment from "moment";
 
 function EmployeeAttendance() {
   const [attendance, setAttendance] = useState([]);
+  const [noDataMessage, setNoDataMessage] = useState("");
   const [rangeStart, setRangeStart] = useState("");
   const [rangeEnd, setRangeEnd] = useState("");
   const { id } = useParams();
@@ -11,6 +12,7 @@ function EmployeeAttendance() {
 
   const fetchAttendance = async () => {
     try {
+      setNoDataMessage("");
       let url = `${import.meta.env.VITE_BACKEND_API}/attendance/list/${id}`;
       const params = new URLSearchParams();
       if (rangeStart) params.append("startDate", rangeStart);
@@ -26,10 +28,21 @@ function EmployeeAttendance() {
 
       if (response.ok) {
         const data = await response.json();
-        setAttendance(data?.data);
+        const rows = Array.isArray(data?.data) ? data.data : [];
+        setAttendance(rows);
+        if (!rows.length) {
+          setNoDataMessage("No attendance records found for the selected date range.");
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        setAttendance([]);
+        setNoDataMessage(
+          errorData?.message || "No attendance records found for the selected date range."
+        );
       }
     } catch (error) {
-      //(error);
+      setAttendance([]);
+      setNoDataMessage("Unable to fetch attendance right now. Please try again.");
     }
   };
 
@@ -153,6 +166,13 @@ function EmployeeAttendance() {
               </td>
             </tr>
           ))}
+          {attendance.length === 0 && (
+            <tr>
+              <td colSpan={7} className="p-6 text-center text-gray-500 font-medium">
+                {noDataMessage || "No attendance records found for the selected date range."}
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
       </div>
