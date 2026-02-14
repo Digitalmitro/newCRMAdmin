@@ -11,6 +11,7 @@ import edit from "../../../assets/desktop/edit.svg";
 import logo from "../../../assets/desktop/logo.svg";
 import { TbBrandDatabricks } from "react-icons/tb";
 import { BiStreetView } from "react-icons/bi";
+import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { useAuth } from "../../../context/authContext";
 import { useEffect, useState } from "react";
 import socket from "../../../utils/socket";
@@ -26,6 +27,7 @@ const getStableColor = (text = "DM") => {
   return `hsl(${hue}, 70%, 40%)`;
 };
 function Sidebarpart() {
+  const SIDEBAR_PREF_KEY = "dm_admin_desktop_sidebar_collapsed";
   const { getChannels } = useAuth();
   const [unreadCounts, setUnreadCounts] = useState(0);
   const [employees, setEmployees] = useState([]);
@@ -51,6 +53,13 @@ function Sidebarpart() {
   });
   const [adminSaving, setAdminSaving] = useState(false);
   const [adminError, setAdminError] = useState("");
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem(SIDEBAR_PREF_KEY) === "1";
+    } catch (error) {
+      return false;
+    }
+  });
   const navigate = useNavigate();
 
   const channel = async () => {
@@ -266,11 +275,19 @@ function Sidebarpart() {
     }
   };
 
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem(SIDEBAR_PREF_KEY, next ? "1" : "0");
+      return next;
+    });
+  };
+
   //(employees);
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <div className="px-3 pt-2 border border-orange-400 h-screen">
+      <div className="relative px-3 pt-2 border border-orange-400 h-screen">
         {/* Navigation Links */}
         <nav className="flex flex-col gap-1  items-center">
           <Link to="/" className="flex items-center">
@@ -342,9 +359,25 @@ function Sidebarpart() {
 
 
         </nav>
+
+        <button
+          type="button"
+          onClick={toggleSidebar}
+          className="absolute -right-3 top-24 z-20 flex h-6 w-6 items-center justify-center rounded-full border border-orange-300 bg-white text-gray-700 shadow-sm hover:bg-orange-50"
+          title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {isSidebarCollapsed ? <FiChevronRight size={14} /> : <FiChevronLeft size={14} />}
+        </button>
       </div>
 
-      <div className="bg-gray-200 w-[250px] p-4 border border-orange-400 h-screen flex flex-col overflow-hidden">
+      <div
+        className={`bg-gray-200 border border-orange-400 h-screen flex flex-col overflow-hidden transition-all duration-300 ${
+          isSidebarCollapsed ? "w-0 p-0 opacity-0 border-l-0 border-r-0 pointer-events-none" : "w-[250px] p-4 opacity-100"
+        }`}
+      >
+        {!isSidebarCollapsed && (
+          <>
         <div className="flex justify-between items-center pt-4 mb-4">
           <h2 className="text-[18px] font-medium   flex gap-2">
             {adminProfile?.name || "Admin"}
@@ -468,6 +501,8 @@ function Sidebarpart() {
             </button>
           </div>
         </div>
+          </>
+        )}
       </div>
 
       {isEditAdminOpen && (

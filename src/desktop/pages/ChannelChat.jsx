@@ -204,6 +204,8 @@ const ChannelChat = () => {
     setReplyTarget(null);
     setHighlightedId(null);
     setActiveTab(location?.state?.openTasks ? "tasks" : "chat");
+    setModal(false);
+    setChannelUpdateModal(false);
   }, [channelId, location?.state?.openTasks]);
 
   useEffect(() => {
