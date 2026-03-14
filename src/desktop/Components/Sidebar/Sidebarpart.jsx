@@ -62,7 +62,6 @@ function Sidebarpart() {
   });
   const navigate = useNavigate();
   const location = useLocation();
-  const isNotesPage = location.pathname === "/notes";
 
   const channel = async () => {
     const data = await getChannels();
@@ -273,11 +272,9 @@ function Sidebarpart() {
   //(employees);
 
   return (
-    <div className={`flex ${isNotesPage ? "min-h-screen" : "h-screen"} overflow-hidden`}>
+    <div className="flex h-screen overflow-hidden">
       <div
-        className={`relative border border-orange-400 px-3 pt-2 ${
-          isNotesPage ? "min-h-screen" : "h-screen"
-        }`}
+        className="relative h-screen border border-orange-400 px-3 pt-2"
       >
         {/* Navigation Links */}
         <nav className="flex flex-col gap-1  items-center">
@@ -363,9 +360,7 @@ function Sidebarpart() {
       </div>
 
       <div
-        className={`bg-gray-200 border border-orange-400 flex flex-col overflow-hidden transition-all duration-300 ${
-          isNotesPage ? "min-h-screen" : "h-screen"
-        } ${
+        className={`h-screen bg-gray-200 border border-orange-400 flex min-h-0 flex-col overflow-hidden transition-all duration-300 ${
           isSidebarCollapsed ? "w-0 p-0 opacity-0 border-l-0 border-r-0 pointer-events-none" : "w-[260px] px-3 py-4 opacity-100"
         }`}
       >
