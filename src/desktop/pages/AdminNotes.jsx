@@ -146,9 +146,9 @@ export default function AdminNotes() {
   return (
     <div className="min-h-full px-0 py-3 md:h-[calc(100dvh-92px)] md:overflow-hidden md:px-6 md:py-5 bg-[#f7f7f5]">
       <div className="h-full rounded-[24px] md:rounded-[28px] border border-orange-100 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.06)] overflow-hidden">
-        <div className="grid h-full grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)]">
-          <aside className="border-b xl:border-b-0 xl:border-r border-slate-200 bg-[#fcfcfb] xl:max-h-none">
-            <div className="flex h-full flex-col">
+        <div className="grid h-full min-h-0 grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)]">
+          <aside className="border-b xl:border-b-0 xl:border-r border-slate-200 bg-[#fcfcfb] min-h-0 overflow-hidden">
+            <div className="flex h-full min-h-0 flex-col">
               <div className="border-b border-slate-200 px-4 py-4 md:px-5 md:py-5">
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-orange-500">
                   Notes Workspace
@@ -176,7 +176,7 @@ export default function AdminNotes() {
                 </label>
               </div>
 
-              <div className="max-h-[280px] overflow-y-auto px-3 py-3 hide-scrollbar xl:max-h-none xl:flex-1">
+              <div className="max-h-[280px] overflow-y-auto px-3 py-3 hide-scrollbar xl:max-h-none xl:min-h-0 xl:flex-1">
                 {usersLoading && (
                   <div className="px-3 py-8 text-sm text-slate-500">Loading people...</div>
                 )}
@@ -252,15 +252,15 @@ export default function AdminNotes() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-4 py-4 md:px-6 md:py-6 hide-scrollbar">
+            <div className="flex-1 min-h-0 overflow-hidden px-4 py-4 md:px-6 md:py-6">
               {!selectedUser && !usersLoading && (
-                <div className="flex h-full items-center justify-center rounded-[24px] border border-dashed border-slate-300 bg-slate-50 px-6 text-center text-sm text-slate-500">
+                <div className="flex h-full min-h-0 items-center justify-center rounded-[24px] border border-dashed border-slate-300 bg-slate-50 px-6 text-center text-sm text-slate-500">
                   Select a person from the left panel to view their notes.
                 </div>
               )}
 
               {selectedUser && (
-                <div className="mx-auto flex h-full max-w-5xl flex-col rounded-[24px] md:rounded-[28px] border border-slate-200 bg-[#fffdf8] shadow-[0_18px_36px_rgba(15,23,42,0.04)]">
+                <div className="mx-auto flex h-full min-h-0 max-w-5xl flex-col overflow-hidden rounded-[24px] md:rounded-[28px] border border-slate-200 bg-[#fffdf8] shadow-[0_18px_36px_rgba(15,23,42,0.04)]">
                   <div className="flex items-center justify-between border-b border-slate-200 px-4 py-4 md:px-6">
                     <div>
                       <p className="text-sm font-semibold text-slate-800">
@@ -275,7 +275,7 @@ export default function AdminNotes() {
                     </span>
                   </div>
 
-                  <div className="flex-1 px-4 py-4 md:px-6 md:py-6">
+                  <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 md:px-6 md:py-6 hide-scrollbar">
                     {notesLoading && (
                       <div className="rounded-3xl border border-slate-200 bg-white px-5 py-10 text-sm text-slate-500">
                         Loading notes...
@@ -289,7 +289,7 @@ export default function AdminNotes() {
                     )}
 
                     {!notesLoading && !notesError && notes && (
-                      <div className="rounded-3xl border border-slate-200 bg-white px-5 py-5 shadow-sm">
+                      <div className="max-h-full overflow-y-auto rounded-3xl border border-slate-200 bg-white px-5 py-5 shadow-sm hide-scrollbar">
                         <pre className="whitespace-pre-wrap break-words font-sans text-[15px] leading-7 text-slate-700">
                           {notes}
                         </pre>
