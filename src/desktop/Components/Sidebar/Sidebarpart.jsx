@@ -272,9 +272,9 @@ function Sidebarpart() {
   //(employees);
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="sticky top-0 flex h-[100dvh] shrink-0 overflow-hidden">
       <div
-        className="relative h-screen border border-orange-400 px-3 pt-2"
+        className="relative h-[100dvh] border border-orange-400 px-3 pt-2"
       >
         {/* Navigation Links */}
         <nav className="flex flex-col gap-1  items-center">
@@ -360,7 +360,7 @@ function Sidebarpart() {
       </div>
 
       <div
-        className={`h-screen bg-gray-200 border border-orange-400 flex min-h-0 flex-col overflow-hidden transition-all duration-300 ${
+        className={`h-[100dvh] bg-gray-200 border border-orange-400 flex min-h-0 flex-col overflow-hidden transition-all duration-300 ${
           isSidebarCollapsed ? "w-0 p-0 opacity-0 border-l-0 border-r-0 pointer-events-none" : "w-[260px] px-3 py-4 opacity-100"
         }`}
       >
