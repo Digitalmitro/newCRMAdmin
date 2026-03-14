@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import home from "../../../assets/desktop/home.svg";
 import attendence from "../../../assets/desktop/attendence.svg";
 import bidirection from "../../../assets/desktop/bidirection.svg";
@@ -29,10 +29,10 @@ const getStableColor = (text = "DM") => {
 function Sidebarpart() {
   const SIDEBAR_PREF_KEY = "dm_admin_desktop_sidebar_collapsed";
   const { getChannels } = useAuth();
-  const [unreadCounts, setUnreadCounts] = useState(0);
+  const [unreadCounts, setUnreadCounts] = useState({});
   const [employees, setEmployees] = useState([]);
   const [channels, setChannels] = useState([]);
-  const { getAllRecentUsers, userData } = useAuth();
+  const { getAllRecentUsers } = useAuth();
   const [openChatId, setOpenChatId] = useState(null);
   const [pendingConcerns, setPendingConcerns] = useState(0);
   const [adminProfile, setAdminProfile] = useState(() => {
@@ -61,15 +61,17 @@ function Sidebarpart() {
     }
   });
   const navigate = useNavigate();
+  const location = useLocation();
+  const isNotesPage = location.pathname === "/notes";
 
   const channel = async () => {
     const data = await getChannels();
     setChannels(data);
   };
   const allUsers = async () => {
-    const users = await getAllRecentUsers();
+    const users = (await getAllRecentUsers()) || [];
     const unreadCounts = {};
-    users.forEach(user => {
+    users.forEach((user) => {
       unreadCounts[user.id] = user.unreadMessages || 0;
     });
     setUnreadCounts(unreadCounts);
@@ -148,17 +150,11 @@ function Sidebarpart() {
     } else {
       setOpenChatId(null);
     }
-  }, [location]);
+  }, [location.state]);
 
   const handleCowrokers = () => {
     navigate("/addCoworker");
   };
-  const handleCowrokersNotes = () => {
-    navigate("/addCoworker", {
-      state: { from: "/notes" }
-    });
-  };
-
   const handleChat = async (name, id) => {
 
     //(id);
@@ -187,15 +183,6 @@ function Sidebarpart() {
       state: {
         name,
         description,
-        id,
-      },
-    });
-  };
-
-  const handleNotes = (name, id) => {
-    navigate("/notes", {
-      state: {
-        name,
         id,
       },
     });
@@ -286,8 +273,12 @@ function Sidebarpart() {
   //(employees);
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <div className="relative px-3 pt-2 border border-orange-400 h-screen">
+    <div className={`flex ${isNotesPage ? "min-h-screen" : "h-screen"} overflow-hidden`}>
+      <div
+        className={`relative border border-orange-400 px-3 pt-2 ${
+          isNotesPage ? "min-h-screen" : "h-screen"
+        }`}
+      >
         {/* Navigation Links */}
         <nav className="flex flex-col gap-1  items-center">
           <Link to="/" className="flex items-center">
@@ -307,10 +298,10 @@ function Sidebarpart() {
               <p className="text-[12px] font-semibold">Attendance</p>
             </div>
           </Link>
-          <Link to="/projects" className="flex items-center gap-2 p-2 ">
+          <Link to="/notes" className="flex items-center gap-2 p-2 ">
             <div className="flex flex-col  items-center">
               <img src={book} alt="" className="h-[20px] w-[20px]" />
-              <p className="text-[12px] font-semibold">Projects</p>
+              <p className="text-[12px] font-semibold">Notes</p>
             </div>
           </Link>
           <Link to="/callbacklist" className="flex items-center gap-2 p-2 ">
@@ -372,13 +363,15 @@ function Sidebarpart() {
       </div>
 
       <div
-        className={`bg-gray-200 border border-orange-400 h-screen flex flex-col overflow-hidden transition-all duration-300 ${
-          isSidebarCollapsed ? "w-0 p-0 opacity-0 border-l-0 border-r-0 pointer-events-none" : "w-[250px] p-4 opacity-100"
+        className={`bg-gray-200 border border-orange-400 flex flex-col overflow-hidden transition-all duration-300 ${
+          isNotesPage ? "min-h-screen" : "h-screen"
+        } ${
+          isSidebarCollapsed ? "w-0 p-0 opacity-0 border-l-0 border-r-0 pointer-events-none" : "w-[260px] px-3 py-4 opacity-100"
         }`}
       >
         {!isSidebarCollapsed && (
           <>
-        <div className="flex justify-between items-center pt-4 mb-4">
+        <div className="flex justify-between items-center pt-3 mb-3">
           <h2 className="text-[18px] font-medium   flex gap-2">
             {adminProfile?.name || "Admin"}
             <img src={arrow} alt="" className="w-[8px] pt-1" />
@@ -388,69 +381,77 @@ function Sidebarpart() {
           </button>
         </div>
 
-        <div className="flex flex-col gap-4 flex-1 min-h-0">
+        <div className="flex flex-col gap-3 flex-1 min-h-0">
           {/* Channels Section */}
-          <div className="pt-4 flex-none">
-            <h3 className="text-[15px] font-bold text-gray-600 flex gap-2">
-              Channels <img src={arrow} alt="" className="w-[8px] pt-1" />
-            </h3>
-            <ul className="mt-2 max-h-[160px] overflow-y-auto hide-scrollbar">
+          <div className="pt-2 flex flex-col min-h-0 flex-[0.95]">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-[15px] font-bold text-gray-600 flex gap-2">
+                Channels <img src={arrow} alt="" className="w-[8px] pt-1" />
+              </h3>
+              <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-gray-500">
+                {channels?.length || 0}
+              </span>
+            </div>
+            <ul className="mt-2 flex-1 min-h-0 overflow-y-auto hide-scrollbar">
               {channels?.map((channel) => (
                 <li key={channel._id}>
-                  <p
-                    className="block p-2 text-gray-700 font-medium text-[14px] cursor-pointer"
+                  <button
+                    type="button"
+                    className="flex w-full items-center gap-2 rounded-xl px-2 py-1.5 text-left text-gray-700 font-medium text-[13px] hover:bg-white/70"
                     onClick={() => handleChannelChat(channel.name, channel._id, channel.description)}
                   >
-                    <p className="flex space-x-2">
-                      <span
-                        className="border items-center  flex justify-center w-5 h-5 text-[12px] font-medium text-white"
-                        style={{
-                          backgroundColor: getStableColor(channel?.name),
-                        }}
-                      >
-                        {channel?.name?.charAt(0).toUpperCase()}
-                      </span>
-                      <span>{channel.name}</span>
-                    </p>
-                  </p>
+                    <span
+                      className="border items-center flex shrink-0 justify-center w-5 h-5 text-[12px] font-medium text-white"
+                      style={{
+                        backgroundColor: getStableColor(channel?.name),
+                      }}
+                    >
+                      {channel?.name?.charAt(0).toUpperCase()}
+                    </span>
+                    <span className="truncate">{channel.name}</span>
+                  </button>
                 </li>
               ))}
-              <li>
-                <p
-                  className="block p-2 text-gray-700 text-[13px] cursor-pointer"
-                  onClick={handleChannel}
-                >
-                  + Add Channels
-                </p>
-              </li>
             </ul>
+            <button
+              type="button"
+              className="mt-1 rounded-xl px-2 py-1.5 text-left text-gray-700 text-[13px] hover:bg-white/70"
+              onClick={handleChannel}
+            >
+              + Add Channels
+            </button>
           </div>
 
           {/* Messages Section */}
-          <div className="flex flex-col flex-1 min-h-0">
-            <h3 className="text-[15px] font-bold text-gray-600 flex gap-2">
-              Messages <img src={arrow} alt="" className="w-[8px] pt-1" />
-            </h3>
+          <div className="flex flex-col min-h-0 flex-[1.15]">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-[15px] font-bold text-gray-600 flex gap-2">
+                Messages <img src={arrow} alt="" className="w-[8px] pt-1" />
+              </h3>
+              <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-gray-500">
+                {employees?.length || 0}
+              </span>
+            </div>
             <ul className="mt-2 flex-1 min-h-0 overflow-y-auto pr-1 hide-scrollbar">
               {employees?.map((user, i) => (
                 <li
-                  key={i}
-                  className="block p-2 text-gray-700 text-[14px] font-medium cursor-pointer"
+                  key={user.id || i}
+                  className="rounded-xl hover:bg-white/70"
                   onClick={() => handleChat(user.name, user.id)}
                 >
-                  <p className="flex space-x-2">
+                  <p className="flex items-center gap-2 px-2 py-1.5 text-gray-700 text-[13px] font-medium cursor-pointer">
                     <span
-                      className="border items-center  flex justify-center w-5 h-5 text-[12px] font-medium text-white"
+                      className="border items-center flex shrink-0 justify-center w-5 h-5 text-[12px] font-medium text-white"
                       style={{
                         backgroundColor: getStableColor(user?.name),
                       }}
                     >
                       {user?.name?.charAt(0).toUpperCase()}
                     </span>
-                    <span>{user.name}</span>
+                    <span className="truncate flex-1 min-w-0">{user.name}</span>
                     {unreadCounts[user.id] > 0 && openChatId !== user.id && (
-                      <span className="text-green-500 font-bold">
-                        ({unreadCounts[user.id]})
+                      <span className="shrink-0 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[11px] font-bold text-green-600">
+                        {unreadCounts[user.id]}
                       </span>
                     )}
                   </p>
@@ -459,47 +460,13 @@ function Sidebarpart() {
             </ul>
             <button
               type="button"
-              className="block p-2 text-gray-700 text-[15px] cursor-pointer"
+              className="mt-1 rounded-xl px-2 py-1.5 text-left text-gray-700 text-[13px] hover:bg-white/70"
               onClick={handleCowrokers}
             >
               + Add Coworker
             </button>
           </div>
 
-          {/* Notes Section */}
-          <div className="flex flex-col flex-1 min-h-0">
-            <h3 className="text-[15px] font-bold text-gray-600 flex gap-2">
-              Notes <img src={arrow} alt="" className="w-[8px] pt-1" />
-            </h3>
-            <ul className="mt-2 flex-1 min-h-0 overflow-y-auto pr-1 hide-scrollbar">
-              {employees?.map((user, i) => (
-                <li
-                  key={i}
-                  className="block p-2 text-gray-700 text-[14px] font-medium cursor-pointer"
-                  onClick={() => handleNotes(user.name, user.id)}
-                >
-                  <p className="flex space-x-2">
-                    <span
-                      className="border items-center  flex justify-center w-5 h-5 text-[12px] font-medium text-white"
-                      style={{
-                        backgroundColor: getStableColor(user?.name),
-                      }}
-                    >
-                      {user?.name?.charAt(0).toUpperCase()}
-                    </span>
-                    <span>{user.name}</span>
-                  </p>
-                </li>
-              ))}
-            </ul>
-            <button
-              type="button"
-              className="block p-2 text-gray-700 text-[15px] cursor-pointer"
-              onClick={handleCowrokersNotes}
-            >
-              + Add Coworker
-            </button>
-          </div>
         </div>
           </>
         )}

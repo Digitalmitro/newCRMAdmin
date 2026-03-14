@@ -5,7 +5,7 @@ import { useAuth } from "../../context/authContext";
 import { useLocation, useNavigate } from "react-router-dom";
 
 function AddChannelPeople() {
-  const { getAllUsers } = useAuth();
+  const { getAllRecentUsers } = useAuth();
   const [members, setMembers] = useState([])
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPeople, setSelectedPeople] = useState([]);
@@ -17,17 +17,19 @@ function AddChannelPeople() {
   const token = localStorage.getItem("token");
   const navigate = useNavigate()
 
+  const getPersonId = (person) => person?._id || person?.id || "";
+
 
   const handleButton = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/api/create`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ name: channelName, members: members })
-      });
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/api/create`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ name: channelName, members: members.filter(Boolean) })
+        });
       if (response.ok) {
 
       }
@@ -41,7 +43,7 @@ function AddChannelPeople() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await getAllUsers();
+        const response = await getAllRecentUsers();
         if (response && Array.isArray(response)) {
           setAllPeople(response); // Store API response
         }
@@ -77,6 +79,7 @@ function AddChannelPeople() {
   };
 
   const handleSelectPerson = (id, name) => {
+    if (!id) return;
     
     if (!selectedPeople.some((p) => p.id === id)) {
       setSelectedPeople([...selectedPeople, { id, name }]);
@@ -116,9 +119,9 @@ function AddChannelPeople() {
         <div className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded shadow-md mt-1 z-10">
           {filteredPeople.map((person) => (
             <div
-              key={person._id}
+              key={getPersonId(person)}
               className="p-2 cursor-pointer hover:bg-gray-100"
-              onClick={() => handleSelectPerson(person._id, person.name)}
+              onClick={() => handleSelectPerson(getPersonId(person), person.name)}
             >
               {person.name}
             </div>

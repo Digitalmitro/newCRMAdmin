@@ -129,79 +129,104 @@ function Searchbar() {
 
 
   return (
-    <div className="w-full border-b-2 border-orange-400 pt-6 px-6 flex justify-between relative">
-      {/* Search Bar */}
-      <div className="mb-6 bg-[#E3E3E3] w-[700px] rounded flex gap-2 px-4">
-        <img src={search} alt="Search Icon" />
+    <div className="app-toolbar relative flex w-full items-center justify-between gap-4 px-5 pb-5 pt-5 lg:gap-6 lg:px-6">
+      <div className="app-search-shell flex max-w-3xl flex-1 items-center gap-3 rounded-2xl px-4 py-3">
+        <img src={search} alt="Search Icon" className="h-4 w-4 opacity-60" />
         <input
           type="text"
           placeholder="Search"
-          className="p-1 text-[13px] w-full border-none outline-none bg-transparent"
+          className="w-full bg-transparent text-sm text-slate-700 placeholder:text-slate-400"
         />
       </div>
 
-      {/* Notification Icon */}
-      <div className="flex gap-4">
-        <div className="relative cursor-pointer" onClick={toggleSidebar}>
-          <img src={notificationIcon} alt="Notifications" className="w-6 h-6" />
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          className="app-icon-button relative h-10 w-10 rounded-full"
+          onClick={toggleSidebar}
+          aria-label="Open notifications"
+        >
+          <img src={notificationIcon} alt="Notifications" className="h-5 w-5" />
           {unreadCount > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+            <span className="absolute -right-1 -top-1 min-w-[1.2rem] rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
               {unreadCount}
             </span>
           )}
-        </div>
-        {/* logout */}
-        <div className="cursor-pointer" onClick={handleLogout}>
-          <MdLogout size={25} />
-        </div>
+        </button>
+
+        <button
+          type="button"
+          className="app-icon-button h-10 w-10 rounded-full"
+          onClick={handleLogout}
+          aria-label="Logout"
+        >
+          <MdLogout size={20} />
+        </button>
       </div>
 
-      {/* Notification Sidebar */}
       <div
-        className={`fixed top-0 right-0 w-80 h-full bg-white shadow-lg transition-transform transform ${isSidebarOpen ? "translate-x-0" : "translate-x-full"
-          } p-4 z-50`}
+        className={`notification-drawer fixed right-0 top-0 z-50 flex h-screen w-[380px] max-w-[calc(100vw-20px)] flex-col p-4 shadow-2xl transition-transform ${
+          isSidebarOpen ? "translate-x-0" : "translate-x-full"
+        }`}
       >
-          <div className="flex justify-between items-center pb-4 border-b">
-            <h2 className="text-lg font-semibold">Notifications</h2>
-            <button className="text-gray-600" onClick={clearAllNotifications} title="Clear all">
-              <IoIosClose size={32} />
-            </button>
+        <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-800">Notifications</h2>
+            <p className="mt-1 text-xs text-slate-500">
+              Review alerts and jump directly to the relevant screen.
+            </p>
           </div>
-        <div className="mt-4 space-y-3">
+          <button
+            type="button"
+            className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 transition hover:border-orange-300 hover:text-orange-600"
+            onClick={clearAllNotifications}
+          >
+            Clear all notifications
+          </button>
+        </div>
+
+        <div className="hide-scrollbar mt-4 flex-1 min-h-0 space-y-3 overflow-y-auto pr-1">
           {notification.length > 0 ? (
             notification.map((notify, i) => (
-              <div key={i} className="p-3 border border-gray-300 rounded-lg shadow-sm hover:bg-gray-100 transition flex justify-between items-center cursor-pointer" onClick={() => handleNotification(notify)}>
-                <img src={logo} alt="" className="w-[40px]" />
-                <div >
-
-                  <h3 className="text-sm font-semibold text-gray-700">{notify.title}</h3>
-                  <p className="text-xs text-gray-500 mt-1">{notify.description}</p>
+              <div
+                key={i}
+                className="notification-card flex cursor-pointer items-start gap-3 rounded-2xl p-3"
+                onClick={() => handleNotification(notify)}
+              >
+                <img src={logo} alt="" className="h-10 w-10 shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <h3 className="truncate text-sm font-semibold text-slate-800">
+                    {notify.title}
+                  </h3>
+                  <p className="mt-1 break-words text-xs leading-5 text-slate-500">
+                    {notify.description}
+                  </p>
                 </div>
-
                 <button
-                  className="text-red-500 text-xs font-bold px-2 py-1 hover:text-red-700"
+                  type="button"
+                  className="text-red-500 transition hover:text-red-700"
                   onClick={(event) => {
                     event.stopPropagation();
                     removeNotification(i);
                   }}
+                  aria-label="Dismiss notification"
                 >
-                  <IoIosClose size={26} />
+                  <IoIosClose size={24} />
                 </button>
-
               </div>
             ))
           ) : (
-            <p className="text-sm text-gray-500 text-center">No new notifications</p>
+            <div className="notification-card rounded-2xl p-6 text-center">
+              <p className="text-sm font-semibold text-slate-700">All caught up</p>
+              <p className="mt-1 text-xs text-slate-500">No new notifications right now.</p>
+            </div>
           )}
         </div>
       </div>
 
-
-
-      {/* Overlay to close sidebar */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black opacity-30 z-40"
+          className="fixed inset-0 z-40 bg-slate-950/25"
           onClick={toggleSidebar}
         ></div>
       )}

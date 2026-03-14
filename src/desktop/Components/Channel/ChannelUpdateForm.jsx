@@ -5,25 +5,26 @@ import Select from "react-select";
 
 export default function ChannelUpdateForm({ groupUsers, members }) {
     const location = useLocation();
-    const { getAllUsers } = useAuth();
+    const { getAllRecentUsers } = useAuth();
     const [allPeople, setAllPeople] = useState([]);
     const [selectedMembers, setSelectedMembers] = useState([]);
     const channelId = location.pathname.split("/").at(2);
     const token = localStorage.getItem('token')
+    const getUserId = (user) => user?._id || user?.id || "";
 
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await getAllUsers();
+                const response = await getAllRecentUsers();
                 if (response && Array.isArray(response)) {
                     setAllPeople(response);
 
 
                     // set initial selected members
                     const selected = response
-                        .filter(user => members.some(member => member?._id === user?._id))
+                        .filter(user => members.some(member => member?._id === getUserId(user)))
                         .map(user => ({
-                            value: user?._id,
+                            value: getUserId(user),
                             label: user?.name
                         }));
 
@@ -103,9 +104,9 @@ export default function ChannelUpdateForm({ groupUsers, members }) {
 
 
     const options = allPeople.map(user => ({
-        value: user._id,
+        value: getUserId(user),
         label: user.name
-    }));
+    })).filter((option) => option.value);
 
     return <form
         className="p-4 pt-8 space-y-2"
