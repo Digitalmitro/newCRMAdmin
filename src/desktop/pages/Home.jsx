@@ -77,7 +77,7 @@ function Home() {
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-orange-500">
               Control Center
             </p>
-            <h1 className="mt-2 text-2xl font-semibold text-slate-900">Admin overview</h1>
+            <h1 className="mt-2 text-2xl font-semibold text-slate-900">Admin overview -- TESTING DEPLOYMENT ISSUES</h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-500">
               Jump into the busiest work areas from one place. The cards below keep the core
               modules easy to reach on both desktop and mobile.
