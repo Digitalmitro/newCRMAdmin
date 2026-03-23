@@ -95,6 +95,20 @@ const ChannelChat = () => {
     }
   }, [channelId, token]);
 
+  const markChannelAsRead = useCallback(async () => {
+    if (!channelId || !token || activeTab !== "chat") return;
+    try {
+      await fetch(`${import.meta.env.VITE_BACKEND_API}/channels/${channelId}/read`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (error) {
+      console.error("Unable to mark channel messages as read:", error);
+    }
+  }, [activeTab, channelId, token]);
+
   const openTaskDetails = (taskNumber) => {
     if (!taskNumber) return;
     setTaskFocusNumber(taskNumber);
@@ -203,6 +217,10 @@ const ChannelChat = () => {
   }, [channelId, fetchTaskIndex]);
 
   useEffect(() => {
+    markChannelAsRead();
+  }, [activeTab, channelId, markChannelAsRead]);
+
+  useEffect(() => {
     setReplyTarget(null);
     setHighlightedId(null);
     setActiveTab(location?.state?.openTasks ? "tasks" : "chat");
@@ -232,10 +250,13 @@ const ChannelChat = () => {
       if (msg?.isSystem && extractTaskNumber(msg?.message)) {
         fetchTaskIndex();
       }
+      if (String(msg?.sender) !== String(senderId) && activeTab === "chat") {
+        markChannelAsRead();
+      }
     });
 
     return unsubscribe;
-  }, [channelId, extractTaskNumber, fetchTaskIndex]);
+  }, [activeTab, channelId, extractTaskNumber, fetchTaskIndex, markChannelAsRead, senderId]);
 
   const scrollToLatestMessage = useCallback((behavior = "auto") => {
     const listContainer = messageListRef.current;
