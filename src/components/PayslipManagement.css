@@ -1,0 +1,266 @@
+.payslip-management {
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  min-height: 100vh;
+}
+
+.payslip-management h2 {
+  margin: 0 0 30px 0;
+  color: #212529;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.payslip-management .upload-section {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.payslip-management .upload-section h3 {
+  margin: 0 0 20px 0;
+  color: #212529;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.payslip-management .form-group {
+  margin-bottom: 15px;
+}
+
+.payslip-management .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.payslip-management .form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.payslip-management .form-group select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.payslip-management .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.payslip-management .btn-select-file,
+.payslip-management .btn-refresh {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.payslip-management .btn-select-file:hover:not(:disabled),
+.payslip-management .btn-refresh:hover {
+  background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+.payslip-management .btn-select-file:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.payslip-management .error-message {
+  color: #dc3545;
+  padding: 12px;
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 6px;
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.payslip-management .success-message {
+  color: #155724;
+  padding: 12px;
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 6px;
+  margin-top: 15px;
+  font-size: 14px;
+  animation: slideDown 0.3s ease;
+}
+
+.payslip-management .payslips-list-section {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.payslip-management .payslips-list-section h3 {
+  margin: 0 0 20px 0;
+  color: #212529;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.payslip-management .btn-refresh {
+  padding: 8px 16px;
+  font-size: 12px;
+}
+
+.payslip-management .payslips-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.payslip-management .payslips-table thead {
+  background: #f8f9fa;
+}
+
+.payslip-management .payslips-table th {
+  padding: 12px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: #495057;
+  text-transform: uppercase;
+  border-bottom: 2px solid #dee2e6;
+  letter-spacing: 0.5px;
+}
+
+.payslip-management .payslips-table td {
+  padding: 12px;
+  border-bottom: 1px solid #dee2e6;
+  font-size: 14px;
+  color: #495057;
+}
+
+.payslip-management .payslips-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.payslip-management .payslips-table .actions {
+  display: flex;
+  gap: 10px;
+}
+
+.payslip-management .btn-download,
+.payslip-management .btn-delete {
+  padding: 6px 12px;
+  background: none;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.payslip-management .btn-download {
+  color: #0056b3;
+  border-color: #0056b3;
+}
+
+.payslip-management .btn-download:hover {
+  background: #0056b3;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 86, 179, 0.2);
+}
+
+.payslip-management .btn-delete {
+  color: #dc3545;
+  border-color: #dc3545;
+}
+
+.payslip-management .btn-delete:hover {
+  background: #dc3545;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
+}
+
+.payslip-management .no-data {
+  text-align: center;
+  padding: 40px 20px;
+  color: #adb5bd;
+  font-size: 16px;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .payslip-management .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .payslip-management .payslips-table {
+    font-size: 12px;
+  }
+
+  .payslip-management .payslips-table th,
+  .payslip-management .payslips-table td {
+    padding: 8px;
+  }
+
+  .payslip-management .btn-download,
+  .payslip-management .btn-delete {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .payslip-management {
+    padding: 15px;
+  }
+
+  .payslip-management h2 {
+    font-size: 20px;
+  }
+
+  .payslip-management .upload-section,
+  .payslip-management .payslips-list-section {
+    padding: 15px;
+  }
+
+  .payslip-management .payslips-table {
+    overflow-x: auto;
+    display: block;
+  }
+}

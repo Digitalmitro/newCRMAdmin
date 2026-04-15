@@ -1,0 +1,223 @@
+.bulk-invite-manager {
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin: 20px 0;
+}
+
+.bulk-invite-manager h3 {
+  margin: 0 0 20px 0;
+  color: #212529;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.bulk-invite-manager form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.bulk-invite-manager .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bulk-invite-manager .form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bulk-invite-manager textarea {
+  padding: 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: 'Courier New', monospace;
+  resize: vertical;
+  min-height: 150px;
+  transition: all 0.3s ease;
+}
+
+.bulk-invite-manager textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.bulk-invite-manager textarea:disabled {
+  background: #f8f9fa;
+  color: #adb5bd;
+  cursor: not-allowed;
+}
+
+.bulk-invite-manager textarea::placeholder {
+  color: #adb5bd;
+  font-family: 'Courier New', monospace;
+}
+
+.bulk-invite-manager small {
+  font-size: 12px;
+  color: #6c757d;
+  margin-top: 5px;
+}
+
+.bulk-invite-manager .btn-send {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  align-self: flex-start;
+}
+
+.bulk-invite-manager .btn-send:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1e7e34 0%, #145a27 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.bulk-invite-manager .btn-send:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bulk-invite-manager .error-message {
+  color: #dc3545;
+  padding: 12px;
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 6px;
+  font-size: 14px;
+  margin: 0;
+}
+
+.bulk-invite-manager .results-section {
+  margin-top: 30px;
+  padding-top: 30px;
+  border-top: 2px solid #dee2e6;
+}
+
+.bulk-invite-manager .summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.bulk-invite-manager .summary p {
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  margin: 0;
+  text-align: center;
+  font-weight: 600;
+}
+
+.bulk-invite-manager .summary .total {
+  color: #495057;
+  border-left: 4px solid #007bff;
+}
+
+.bulk-invite-manager .summary .successful {
+  color: #155724;
+  border-left: 4px solid #28a745;
+}
+
+.bulk-invite-manager .summary .failed {
+  color: #721c24;
+  border-left: 4px solid #dc3545;
+}
+
+.bulk-invite-manager .summary strong {
+  display: block;
+  font-size: 24px;
+  margin-top: 5px;
+}
+
+.bulk-invite-manager .successful-list,
+.bulk-invite-manager .failed-list {
+  margin-top: 20px;
+}
+
+.bulk-invite-manager .successful-list h4,
+.bulk-invite-manager .failed-list h4 {
+  margin: 0 0 15px 0;
+  color: #212529;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.bulk-invite-manager .successful-list h4 {
+  color: #155724;
+}
+
+.bulk-invite-manager .failed-list h4 {
+  color: #721c24;
+}
+
+.bulk-invite-manager .successful-list ul,
+.bulk-invite-manager .failed-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bulk-invite-manager .successful-list li,
+.bulk-invite-manager .failed-list li {
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 4px solid;
+  font-size: 14px;
+}
+
+.bulk-invite-manager .successful-list li {
+  border-left-color: #28a745;
+  color: #155724;
+}
+
+.bulk-invite-manager .failed-list li {
+  border-left-color: #dc3545;
+  color: #721c24;
+}
+
+@media (max-width: 600px) {
+  .bulk-invite-manager {
+    padding: 15px;
+  }
+
+  .bulk-invite-manager h3 {
+    font-size: 16px;
+  }
+
+  .bulk-invite-manager .summary {
+    grid-template-columns: 1fr;
+  }
+
+  .bulk-invite-manager textarea {
+    min-height: 120px;
+    font-size: 13px;
+  }
+
+  .bulk-invite-manager .btn-send {
+    width: 100%;
+    padding: 10px 20px;
+    font-size: 14px;
+    align-self: stretch;
+  }
+}

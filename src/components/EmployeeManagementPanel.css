@@ -1,0 +1,433 @@
+.employee-management-panel {
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  min-height: 100vh;
+}
+
+.employee-management-panel h2 {
+  margin: 0 0 30px 0;
+  color: #212529;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.employee-management-panel .main-container {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 20px;
+}
+
+.employee-management-panel .employees-list {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  height: fit-content;
+  position: sticky;
+  top: 20px;
+}
+
+.employee-management-panel .employees-list h3 {
+  margin: 0 0 15px 0;
+  color: #212529;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.employee-management-panel .btn-refresh {
+  width: 100%;
+  padding: 10px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin-bottom: 15px;
+}
+
+.employee-management-panel .btn-refresh:hover {
+  background: #0056b3;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+
+.employee-management-panel .employee-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.employee-management-panel .employee-item {
+  padding: 12px;
+  background: #f8f9fa;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.employee-management-panel .employee-item:hover {
+  background: #e7f3ff;
+  border-color: #007bff;
+}
+
+.employee-management-panel .employee-item.selected {
+  background: #cce5ff;
+  border-color: #0056b3;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.employee-management-panel .emp-name {
+  font-weight: 600;
+  color: #212529;
+  font-size: 14px;
+}
+
+.employee-management-panel .emp-email {
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.employee-management-panel .loading {
+  padding: 20px;
+  text-align: center;
+  color: #6c757d;
+}
+
+.employee-management-panel .no-data {
+  padding: 20px;
+  text-align: center;
+  color: #adb5bd;
+  font-size: 14px;
+}
+
+.employee-management-panel .details-section {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.employee-management-panel .employee-header {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.employee-management-panel .employee-header h3 {
+  margin: 0 0 8px 0;
+  color: #212529;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.employee-management-panel .email,
+.employee-management-panel .phone {
+  margin: 4px 0;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.employee-management-panel .activity-summary {
+  margin-bottom: 20px;
+}
+
+.employee-management-panel .activity-summary h4 {
+  margin: 0 0 15px 0;
+  color: #212529;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.employee-management-panel .summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.employee-management-panel .summary-item {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 6px;
+  text-align: center;
+  border-left: 4px solid #007bff;
+}
+
+.employee-management-panel .summary-item label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.employee-management-panel .summary-item p {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #212529;
+}
+
+.employee-management-panel .channels-list {
+  margin-top: 15px;
+}
+
+.employee-management-panel .channels-list h5 {
+  margin: 0 0 10px 0;
+  color: #212529;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.employee-management-panel .channels-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.employee-management-panel .channels-list li {
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #495057;
+  border-left: 3px solid #007bff;
+}
+
+.employee-management-panel .action-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid #dee2e6;
+}
+
+.employee-management-panel .btn-deactivate,
+.employee-management-panel .btn-delete {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.employee-management-panel .btn-deactivate {
+  background: #ffc107;
+  color: #000;
+}
+
+.employee-management-panel .btn-deactivate:hover {
+  background: #e0a800;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
+}
+
+.employee-management-panel .btn-delete {
+  background: #dc3545;
+  color: white;
+}
+
+.employee-management-panel .btn-delete:hover {
+  background: #c82333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
+.employee-management-panel .delete-confirmation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.employee-management-panel .confirm-box {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  max-width: 400px;
+  width: 90%;
+}
+
+.employee-management-panel .confirm-box p {
+  margin: 0 0 15px 0;
+  color: #212529;
+  font-size: 16px;
+}
+
+.employee-management-panel .confirm-box p strong {
+  font-weight: 700;
+}
+
+.employee-management-panel .warning {
+  color: #856404;
+  background: #fff3cd;
+  padding: 12px;
+  border-radius: 6px;
+  margin: 15px 0;
+}
+
+.employee-management-panel .confirm-box ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.employee-management-panel .confirm-box li {
+  padding: 8px 0;
+  color: #495057;
+  font-size: 14px;
+  padding-left: 20px;
+  position: relative;
+}
+
+.employee-management-panel .confirm-box li:before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #28a745;
+  font-weight: bold;
+}
+
+.employee-management-panel .confirm-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.employee-management-panel .btn-confirm-delete,
+.employee-management-panel .btn-cancel {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.employee-management-panel .btn-confirm-delete {
+  background: #dc3545;
+  color: white;
+}
+
+.employee-management-panel .btn-confirm-delete:hover {
+  background: #c82333;
+}
+
+.employee-management-panel .btn-cancel {
+  background: #6c757d;
+  color: white;
+}
+
+.employee-management-panel .btn-cancel:hover {
+  background: #5a6268;
+}
+
+.employee-management-panel .error-message {
+  color: #dc3545;
+  padding: 12px;
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 6px;
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.employee-management-panel .success-message {
+  color: #155724;
+  padding: 12px;
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 6px;
+  margin-top: 15px;
+  font-size: 14px;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1024px) {
+  .employee-management-panel .main-container {
+    grid-template-columns: 1fr;
+  }
+
+  .employee-management-panel .employees-list {
+    position: relative;
+    top: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .employee-management-panel {
+    padding: 15px;
+  }
+
+  .employee-management-panel h2 {
+    font-size: 20px;
+  }
+
+  .employee-management-panel .summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .employee-management-panel .action-buttons {
+    flex-direction: column;
+  }
+
+  .employee-management-panel .confirm-box {
+    padding: 20px;
+  }
+
+  .employee-management-panel .confirm-actions {
+    flex-direction: column;
+  }
+
+  .employee-management-panel .btn-deactivate,
+  .employee-management-panel .btn-delete,
+  .employee-management-panel .btn-confirm-delete,
+  .employee-management-panel .btn-cancel {
+    width: 100%;
+  }
+}
