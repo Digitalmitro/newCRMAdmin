@@ -23,7 +23,7 @@ function Login() {
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_API}/auth/login`,
+        `${import.meta.env.VITE_BACKEND_API}/auth/loginadmin`,
         { email, password },
         { withCredentials: true }
       );
