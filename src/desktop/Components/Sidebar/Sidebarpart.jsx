@@ -12,7 +12,7 @@ import edit from "../../../assets/desktop/edit.svg";
 import logo from "../../../assets/desktop/logo.svg";
 import { TbBrandDatabricks } from "react-icons/tb";
 import { BiStreetView } from "react-icons/bi";
-import { MdOutlineTaskAlt } from "react-icons/md";
+import { MdOutlineTaskAlt, MdOutlineTableChart } from "react-icons/md";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { useAuth } from "../../../context/authContext";
 import { useEffect, useState } from "react";
@@ -39,6 +39,8 @@ function Sidebarpart() {
   const { getAllRecentUsers } = useAuth();
   const [openChatId, setOpenChatId] = useState(null);
   const [pendingConcerns, setPendingConcerns] = useState(0);
+  const [pendingTasks, setPendingTasks] = useState(0);
+  const [sidebarSearch, setSidebarSearch] = useState("");
   const [adminProfile, setAdminProfile] = useState(() => {
     const stored = localStorage.getItem("admin");
     if (!stored) return null;
@@ -144,9 +146,45 @@ function Sidebarpart() {
     fetchPendingConcerns();
     socket.on("soft-refresh", fetchPendingConcerns);
 
+    // Pending tasks badge
+    const fetchPendingTasks = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      try {
+        const r = await fetch(
+          `${import.meta.env.VITE_BACKEND_API}/channels/tasks/count`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (r.ok) { const d = await r.json(); setPendingTasks(d?.pendingCount || 0); }
+      } catch (_) {}
+    };
+    fetchPendingTasks();
+    const taskInterval = setInterval(fetchPendingTasks, 60_000);
+    const onFocus = () => fetchPendingTasks();
+    window.addEventListener("focus", onFocus);
+    socket.on("soft-refresh", fetchPendingTasks);
+
+    // Bubble channel to top on new message (WhatsApp-style)
+    const onNewChannelMessage = (msg) => {
+      if (!msg?.channelId) return;
+      setChannels((prev) => {
+        const idx = prev.findIndex((c) => c._id?.toString() === msg.channelId?.toString());
+        if (idx <= 0) return prev;
+        const updated = [...prev];
+        const [moved] = updated.splice(idx, 1);
+        updated.unshift({ ...moved, lastMessageTime: new Date().toISOString() });
+        return updated;
+      });
+    };
+    socket.on("new-channel-message", onNewChannelMessage);
+
     return () => {
       socket.off("updateUnread");
       socket.off("soft-refresh", fetchPendingConcerns);
+      socket.off("soft-refresh", fetchPendingTasks);
+      socket.off("new-channel-message", onNewChannelMessage);
+      clearInterval(taskInterval);
+      window.removeEventListener("focus", onFocus);
       socket.disconnect();
     };
   }, []);
@@ -293,50 +331,61 @@ function Sidebarpart() {
         {/* Navigation Links */}
         <nav className="flex flex-col gap-0.5 items-stretch">
           <Link to="/" className="flex flex-col items-center py-2 rounded-md">
-            <img src={logo} alt="" className="h-[44px] w-[44px]" />
+            <div className="flex items-center justify-center w-[50px] h-[50px] rounded-xl bg-white shadow-sm p-1">
+              <img src={logo} alt="" className="h-full w-full object-contain" />
+            </div>
           </Link>
-          <Link to="/" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-sidebar-muted hover:text-white">
-            <img src={home} alt="" className="h-[20px] w-[20px] invert opacity-80" />
+          <Link to="/" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+            <img src={home} alt="" className="h-[20px] w-[20px] invert" />
             <p className="text-[11px] font-semibold mt-0.5">Home</p>
           </Link>
-          <Link to="/attendance" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-sidebar-muted hover:text-white">
-            <img src={attendence} alt="" className="h-[18px] w-[18px] invert opacity-80" />
+          <Link to="/attendance" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+            <img src={attendence} alt="" className="h-[18px] w-[18px] invert" />
             <p className="text-[11px] font-semibold mt-0.5">Attendance</p>
           </Link>
-          <Link to="/notes" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-sidebar-muted hover:text-white">
-            <img src={book} alt="" className="h-[18px] w-[18px] invert opacity-80" />
+          <Link to="/notes" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+            <img src={book} alt="" className="h-[18px] w-[18px] invert" />
             <p className="text-[11px] font-semibold mt-0.5">Notes</p>
           </Link>
-          <Link to="/callbacklist" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-sidebar-muted hover:text-white">
-            <img src={calls} alt="" className="h-[20px] w-[20px] invert opacity-80" />
+          <Link to="/callbacklist" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+            <img src={calls} alt="" className="h-[20px] w-[20px] invert" />
             <p className="text-[11px] font-semibold mt-0.5">Callback</p>
           </Link>
-          <Link to="/transferlist" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-sidebar-muted hover:text-white">
-            <img src={bidirection} alt="" className="h-[18px] w-[18px] invert opacity-80" />
+          <Link to="/transferlist" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+            <img src={bidirection} alt="" className="h-[18px] w-[18px] invert" />
             <p className="text-[11px] font-semibold mt-0.5">Transfer</p>
           </Link>
-          <Link to="/saleslist" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-sidebar-muted hover:text-white">
-            <img src={sales} alt="" className="h-[20px] w-[20px] invert opacity-80" />
+          <Link to="/saleslist" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+            <img src={sales} alt="" className="h-[20px] w-[20px] invert" />
             <p className="text-[11px] font-semibold mt-0.5">Sales</p>
           </Link>
-          <Link to="/employee" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-sidebar-muted hover:text-white">
+          <Link to="/employee" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
             <BiStreetView size={22} />
             <p className="text-[11px] font-semibold mt-0.5">Activity</p>
           </Link>
-          <Link to="/concern" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-sidebar-muted hover:text-white relative">
+          <Link to="/concern" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white relative">
             <TbBrandDatabricks size={20} />
             <p className="text-[11px] font-semibold mt-0.5">Concern</p>
             {pendingConcerns > 0 && (
               <span className="absolute top-1 right-1 slack-unread">{pendingConcerns}</span>
             )}
           </Link>
-          <Link to="/notification" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-sidebar-muted hover:text-white">
-            <img src={notes} alt="" className="h-[18px] w-[18px] invert opacity-80" />
+          <Link to="/notification" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+            <img src={notes} alt="" className="h-[18px] w-[18px] invert" />
             <p className="text-[11px] font-semibold mt-0.5">Notifications</p>
           </Link>
-          <Link to="/all-tasks" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-sidebar-muted hover:text-white">
+          <Link to="/all-tasks" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white relative">
             <MdOutlineTaskAlt size={22} />
             <p className="text-[11px] font-semibold mt-0.5">Tasks</p>
+            {pendingTasks > 0 && (
+              <span className="absolute top-1 right-1 slack-unread">
+                {pendingTasks > 99 ? "99+" : pendingTasks}
+              </span>
+            )}
+          </Link>
+          <Link to="/salary-sheet" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+            <MdOutlineTableChart size={22} />
+            <p className="text-[11px] font-semibold mt-0.5">Salary</p>
           </Link>
         </nav>
 
@@ -393,6 +442,16 @@ function Sidebarpart() {
         </div>
 
         <div className="flex flex-col flex-1 min-h-0 px-1">
+          {/* Search input */}
+          <div className="px-1 mb-1">
+            <input
+              type="text"
+              placeholder="Search channels or people..."
+              value={sidebarSearch}
+              onChange={(e) => setSidebarSearch(e.target.value)}
+              className="w-full text-[13px] px-2.5 py-1.5 rounded-md bg-sidebar-hover text-white placeholder-sidebar-muted border border-sidebar-divider focus:outline-none focus:border-sidebar-active"
+            />
+          </div>
           {/* Channels Section — has its own scroll */}
           <div className="pt-1 flex flex-col min-h-0 flex-[0.95]">
             <div className="slack-section-header shrink-0">
@@ -402,7 +461,7 @@ function Sidebarpart() {
               )}
             </div>
             <ul className="flex-1 min-h-0 overflow-y-auto slack-scroll slack-scroll-dark">
-              {channels?.map((channel) => {
+              {channels?.filter(ch => !sidebarSearch || ch.name?.toLowerCase().includes(sidebarSearch.toLowerCase())).map((channel) => {
                 const isActive = location.pathname === `/channelchat/${channel._id}`;
                 return (
                 <li key={channel._id}>
@@ -418,7 +477,7 @@ function Sidebarpart() {
                       rounded="rounded-sm"
                       fontSize="10px"
                     />
-                    <span className="truncate flex-1 min-w-0 slack-row-meta">
+                    <span className="truncate flex-1 min-w-0 font-medium text-white">
                       <span className="text-sidebar-muted mr-0.5">#</span>
                       {channel.name}
                     </span>
@@ -446,7 +505,7 @@ function Sidebarpart() {
               <span>Direct messages</span>
             </div>
             <ul className="flex-1 min-h-0 overflow-y-auto slack-scroll slack-scroll-dark">
-              {employees?.map((user, i) => {
+              {employees?.filter(u => !sidebarSearch || u.name?.toLowerCase().includes(sidebarSearch.toLowerCase())).map((user, i) => {
                 const isActive = location.pathname === `/chat/${user.id}`;
                 return (
                 <li key={user.id || i}>
@@ -461,7 +520,7 @@ function Sidebarpart() {
                       size={18}
                       fontSize="10px"
                     />
-                    <span className="truncate flex-1 min-w-0 slack-row-meta">{user.name}</span>
+                    <span className="truncate flex-1 min-w-0 font-medium text-white">{user.name}</span>
                     {unreadCounts[user.id] > 0 && openChatId !== user.id && (
                       <span className="slack-unread">{unreadCounts[user.id]}</span>
                     )}
