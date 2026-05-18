@@ -56,34 +56,35 @@ function Home() {
   }, []);
 
   const cards = [
-    {
-      title: "Attendance List",
-      caption: activeMonth,
-      description: "Review attendance summaries and monthly activity.",
-      icon: attendence,
-      action: handleAttendaneList,
-    },
-    {
-      title: "All Callback",
-      caption: "Follow-up queue",
-      description: "Pick up pending callbacks and keep response times tight.",
-      icon: calls,
-      action: handleCallback,
-    },
-    {
-      title: "All Sales",
-      caption: "Pipeline overview",
-      description: "Check active sales records, status changes, and outcomes.",
-      icon: sales,
-      action: handleSales,
-    },
-    {
-      title: "All Transfer",
-      caption: "Request handoffs",
-      description: "Track transfer requests and move work between owners cleanly.",
-      icon: transfer,
-      action: handleTransfer,
-    },
+    // Attendance List, All Callback, All Sales, All Transfer boxes removed as requested
+    // {
+    //   title: "Attendance List",
+    //   caption: activeMonth,
+    //   description: "Review attendance summaries and monthly activity.",
+    //   icon: attendence,
+    //   action: handleAttendaneList,
+    // },
+    // {
+    //   title: "All Callback",
+    //   caption: "Follow-up queue",
+    //   description: "Pick up pending callbacks and keep response times tight.",
+    //   icon: calls,
+    //   action: handleCallback,
+    // },
+    // {
+    //   title: "All Sales",
+    //   caption: "Pipeline overview",
+    //   description: "Check active sales records, status changes, and outcomes.",
+    //   icon: sales,
+    //   action: handleSales,
+    // },
+    // {
+    //   title: "All Transfer",
+    //   caption: "Request handoffs",
+    //   description: "Track transfer requests and move work between owners cleanly.",
+    //   icon: transfer,
+    //   action: handleTransfer,
+    // },
   ];
 
   return (
@@ -106,6 +107,8 @@ function Home() {
         </div>
       </div>
 
+      {/* Cards grid hidden — all 4 boxes removed as requested */}
+      {cards.length > 0 && (
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {cards.map((card) => (
           <button
@@ -127,6 +130,7 @@ function Home() {
           </button>
         ))}
       </div>
+      )}
       <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
 
   {/* Team Size */}
