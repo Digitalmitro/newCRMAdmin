@@ -11,11 +11,14 @@ import edit from "../../../assets/desktop/edit.svg";
 import logo from "../../../assets/desktop/logo.svg";
 import { TbBrandDatabricks } from "react-icons/tb";
 import { BiStreetView } from "react-icons/bi";
+import { MdOutlineTaskAlt, MdOutlineTableChart } from "react-icons/md";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { useAuth } from "../../../context/authContext";
 import { useEffect, useState } from "react";
 import socket from "../../../utils/socket";
 import axios from "axios";
+import Avatar from "../Common/Avatar";
+import ProfilePictureUploader from "../Common/ProfilePictureUploader";
 
 const getStableColor = (text = "DM") => {
   let hash = 0;
@@ -35,6 +38,8 @@ function Sidebarpart() {
   const { getAllRecentUsers } = useAuth();
   const [openChatId, setOpenChatId] = useState(null);
   const [pendingConcerns, setPendingConcerns] = useState(0);
+  const [pendingTasks, setPendingTasks] = useState(0);
+  const [sidebarSearch, setSidebarSearch] = useState("");
   const [adminProfile, setAdminProfile] = useState(() => {
     const stored = localStorage.getItem("admin");
     if (!stored) return null;
@@ -121,6 +126,22 @@ function Sidebarpart() {
       allUsers();
       channel();
     });
+
+    // Bubble channel to top instantly on new message (WhatsApp-style)
+    const onNewChannelMessage = (msg) => {
+      if (!msg?.channelId) return;
+      setChannels((prev) => {
+        const idx = prev.findIndex(
+          (c) => c._id?.toString() === msg.channelId?.toString()
+        );
+        if (idx <= 0) return prev;
+        const updated = [...prev];
+        const [moved] = updated.splice(idx, 1);
+        updated.unshift({ ...moved, lastMessageTime: new Date().toISOString() });
+        return updated;
+      });
+    };
+    socket.on("new-channel-message", onNewChannelMessage);
     const fetchPendingConcerns = async () => {
       const token = localStorage.getItem("token");
       if (!token) return;
@@ -140,9 +161,35 @@ function Sidebarpart() {
     fetchPendingConcerns();
     socket.on("soft-refresh", fetchPendingConcerns);
 
+    const fetchPendingTasks = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_API}/channels/tasks/count`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setPendingTasks(data?.pendingCount || 0);
+        }
+      } catch (error) {
+        // silent — leave previous count on transient failure
+      }
+    };
+    fetchPendingTasks();
+    const taskInterval = setInterval(fetchPendingTasks, 60_000);
+    const onFocus = () => fetchPendingTasks();
+    window.addEventListener("focus", onFocus);
+    socket.on("soft-refresh", fetchPendingTasks);
+
     return () => {
       socket.off("updateUnread");
+      socket.off("new-channel-message", onNewChannelMessage);
       socket.off("soft-refresh", fetchPendingConcerns);
+      socket.off("soft-refresh", fetchPendingTasks);
+      clearInterval(taskInterval);
+      window.removeEventListener("focus", onFocus);
       socket.disconnect();
     };
   }, []);
@@ -285,85 +332,70 @@ function Sidebarpart() {
 
   return (
     <div className="sticky top-0 flex h-[100dvh] shrink-0 overflow-hidden">
-      <div
-        className="relative h-[100dvh] border border-orange-400 px-3 pt-2"
-      >
+      <div className="relative h-[100dvh] bg-sidebar text-sidebar-text border-r border-sidebar-divider px-2 pt-2 flex flex-col items-stretch">
         {/* Navigation Links */}
-        <nav className="flex flex-col gap-1  items-center">
-          <Link to="/" className="flex items-center">
-            <div className="flex flex-col items-center">
-              <img src={logo} alt="" className="h-[70px] w-[70px]" />
-            </div>
+        <nav className="flex flex-col gap-0.5 items-stretch">
+          <Link to="/" className="flex flex-col items-center py-2 rounded-md">
+            <div className="flex items-center justify-center w-[50px] h-[50px] rounded-xl bg-white shadow-sm p-1"><img src={logo} alt="" className="h-full w-full object-contain" /></div>
           </Link>
-          <Link to="/" className="flex items-center gap-2 p-2 ">
-            <div className="flex flex-col  items-center">
-              <img src={home} alt="" className="h-[25px] w-[25px]" />
-              <p className="text-[12px] font-semibold">Home</p>
-            </div>
+          <Link to="/" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+            <img src={home} alt="" className="h-[20px] w-[20px] invert" />
+            <p className="text-[11px] font-semibold mt-0.5">Home</p>
           </Link>
-          <Link to="/attendance" className="flex items-center gap-2 p-2 ">
-            <div className="flex flex-col   items-center">
-              <img src={attendence} alt="" className="h-[20px] w-[20px]" />
-              <p className="text-[12px] font-semibold">Attendance</p>
-            </div>
+          <Link to="/attendance" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+            <img src={attendence} alt="" className="h-[18px] w-[18px] invert" />
+            <p className="text-[11px] font-semibold mt-0.5">Attendance</p>
           </Link>
-          <Link to="/notes" className="flex items-center gap-2 p-2 ">
-            <div className="flex flex-col  items-center">
-              <img src={book} alt="" className="h-[20px] w-[20px]" />
-              <p className="text-[12px] font-semibold">Notes</p>
-            </div>
+          <Link to="/notes" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+            <img src={book} alt="" className="h-[18px] w-[18px] invert" />
+            <p className="text-[11px] font-semibold mt-0.5">Notes</p>
           </Link>
-          <Link to="/callbacklist" className="flex items-center gap-2 p-2 ">
-            <div className="flex flex-col items-center">
-              <img src={calls} alt="" className="h-[25px] w-[25px]" />
-              <p className="text-[12px] font-semibold">Callback</p>
-            </div>
+          <Link to="/callbacklist" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+            <img src={calls} alt="" className="h-[20px] w-[20px] invert" />
+            <p className="text-[11px] font-semibold mt-0.5">Callback</p>
           </Link>
-          <Link to="/transferlist" className="flex items-center gap-2 p-2">
-            <div className="flex flex-col  items-center">
-              <img src={bidirection} alt="" className="h-[20px] w-[20px]" />
-              <p className="text-[12px] font-semibold">Transfer</p>
-            </div>
+          <Link to="/transferlist" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+            <img src={bidirection} alt="" className="h-[18px] w-[18px] invert" />
+            <p className="text-[11px] font-semibold mt-0.5">Transfer</p>
           </Link>
-          <Link to="/saleslist" className="flex items-center gap-2 p-2">
-            <div className="flex flex-col  items-center">
-              <img src={sales} alt="" className="h-[25px] w-[25px]" />
-              <p className="text-[12px] font-semibold">Sales</p>
-            </div>
+          <Link to="/saleslist" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+            <img src={sales} alt="" className="h-[20px] w-[20px] invert" />
+            <p className="text-[11px] font-semibold mt-0.5">Sales</p>
           </Link>
-          <Link to="/employee" className="flex items-center gap-2 p-2 ">
-            <div className="flex space-x-2 flex-col   items-center">
-              <BiStreetView size={28} />
-              <p className="text-[12px] font-semibold text-center">Activity </p>
-            </div>
+          <Link to="/employee" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+            <BiStreetView size={22} />
+            <p className="text-[11px] font-semibold mt-0.5">Activity</p>
           </Link>
-          <Link to="/concern" className="flex items-center gap-2 p-2 ">
-            <div className="flex space-x-2 flex-col   items-center">
-              <TbBrandDatabricks size={23} />
-              <div className="relative">
-                <p className="text-[12px] font-semibold">Concern</p>
-                {pendingConcerns > 0 && (
-                  <span className="absolute -top-2 -right-4 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center">
-                    {pendingConcerns}
-                  </span>
-                )}
-              </div>
-            </div>
+          <Link to="/concern" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white relative">
+            <TbBrandDatabricks size={20} />
+            <p className="text-[11px] font-semibold mt-0.5">Concern</p>
+            {pendingConcerns > 0 && (
+              <span className="absolute top-1 right-1 slack-unread">{pendingConcerns}</span>
+            )}
           </Link>
-          <Link to="/notification" className="flex items-center gap-2 p-2">
-            <div className="flex space-x-2  flex-col items-center">
-              <img src={notes} alt="" className="h-[20px] w-[20px]" />
-              <p className="text-[12px] font-semibold">Notifications </p>
-            </div>
+          <Link to="/notification" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white relative">
+            <img src={notes} alt="" className="h-[18px] w-[18px] invert" />
+            <p className="text-[11px] font-semibold mt-0.5">Notifications</p>
           </Link>
-
-
+          <Link to="/all-tasks" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white relative">
+            <MdOutlineTaskAlt size={22} />
+            <p className="text-[11px] font-semibold mt-0.5">Tasks</p>
+            {pendingTasks > 0 && (
+              <span className="absolute top-1 right-1 slack-unread">
+                {pendingTasks > 99 ? "99+" : pendingTasks}
+              </span>
+            )}
+          </Link>
+          <Link to="/salary-sheet" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+            <MdOutlineTableChart size={22} />
+            <p className="text-[11px] font-semibold mt-0.5">Salary</p>
+          </Link>
         </nav>
 
         <button
           type="button"
           onClick={toggleSidebar}
-          className="absolute -right-3 top-24 z-20 flex h-6 w-6 items-center justify-center rounded-full border border-orange-300 bg-white text-gray-700 shadow-sm hover:bg-orange-50"
+          className="absolute -right-3 top-24 z-20 flex h-6 w-6 items-center justify-center rounded-full border border-sidebar-divider bg-sidebar-alt text-sidebar-text shadow hover:bg-sidebar"
           title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
@@ -372,114 +404,146 @@ function Sidebarpart() {
       </div>
 
       <div
-        className={`h-[100dvh] bg-gray-200 border border-orange-400 flex min-h-0 flex-col overflow-hidden transition-all duration-300 ${
-          isSidebarCollapsed ? "w-0 p-0 opacity-0 border-l-0 border-r-0 pointer-events-none" : "w-[260px] px-3 py-4 opacity-100"
+        className={`h-[100dvh] bg-sidebar text-sidebar-text border-r border-sidebar-divider flex min-h-0 flex-col overflow-hidden transition-all duration-300 ${
+          isSidebarCollapsed ? "w-0 p-0 opacity-0 border-l-0 border-r-0 pointer-events-none" : "w-[260px] py-3 opacity-100"
         }`}
       >
         {!isSidebarCollapsed && (
           <>
-        <div className="flex justify-between items-center pt-3 mb-3">
-          <h2 className="text-[18px] font-medium   flex gap-2">
-            {adminProfile?.name || "Admin"}
-            <img src={arrow} alt="" className="w-[8px] pt-1" />
-          </h2>
-          <button type="button" onClick={handleEditAdminOpen}>
-            <img src={edit} alt="Edit admin profile" className="w-[10px] h-[10px]" />
+        {/* Workspace header — clickable area opens admin profile editor */}
+        <div className="flex justify-between items-center px-3 pb-3 mb-1 border-b border-sidebar-divider">
+          <button
+            type="button"
+            onClick={handleEditAdminOpen}
+            className="flex items-center gap-2 text-left min-w-0"
+            title="Edit profile"
+          >
+            <Avatar
+              name={adminProfile?.name || "Admin"}
+              src={adminProfile?.avatar || ""}
+              size={32}
+              rounded="rounded-md"
+            />
+            <span className="min-w-0">
+              <span className="block text-[15px] font-bold text-white truncate">
+                {adminProfile?.name || "Admin"}
+              </span>
+              <span className="block text-[11px] text-sidebar-muted truncate">
+                Admin · workspace
+              </span>
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={handleEditAdminOpen}
+            className="text-sidebar-muted hover:text-white"
+            aria-label="Edit profile"
+            title="Edit profile"
+          >
+            <img src={edit} alt="" className="w-[12px] h-[12px] invert opacity-70" />
           </button>
         </div>
 
-        <div className="flex flex-col gap-3 flex-1 min-h-0">
-          {/* Channels Section */}
-          <div className="pt-2 flex flex-col min-h-0 flex-[0.95]">
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="text-[15px] font-bold text-gray-600 flex gap-2">
-                Channels <img src={arrow} alt="" className="w-[8px] pt-1" />
-              </h3>
-              <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                totalChannelUnread > 0
-                  ? "bg-emerald-100 text-emerald-700"
-                  : "bg-white text-gray-500"
-              }`}>
-                {totalChannelUnread > 0 ? totalChannelUnread : channels?.length || 0}
-              </span>
+        {/* Search input — filters channels and DMs inline */}
+        <div className="px-3 mb-1">
+          <input
+            type="text"
+            placeholder="Search channels or people..."
+            value={sidebarSearch}
+            onChange={(e) => setSidebarSearch(e.target.value)}
+            className="w-full text-[13px] px-2.5 py-1.5 rounded-md bg-sidebar-hover text-white placeholder-sidebar-muted border border-sidebar-divider focus:outline-none focus:border-sidebar-active"
+          />
+        </div>
+
+        <div className="flex flex-col flex-1 min-h-0 px-1">
+          {/* Channels Section — has its own scroll */}
+          <div className="pt-1 flex flex-col min-h-0 flex-[0.95]">
+            <div className="slack-section-header shrink-0">
+              <span>Channels</span>
+              {totalChannelUnread > 0 && (
+                <span className="slack-unread !bg-red-500">{totalChannelUnread}</span>
+              )}
             </div>
-            <ul className="mt-2 flex-1 min-h-0 overflow-y-auto hide-scrollbar">
-              {channels?.map((channel) => (
+            <ul className="flex-1 min-h-0 overflow-y-auto slack-scroll slack-scroll-dark">
+              {channels?.filter(ch =>
+                !sidebarSearch || ch.name?.toLowerCase().includes(sidebarSearch.toLowerCase())
+              ).map((channel) => {
+                const isActive = location.pathname === `/channelchat/${channel._id}`;
+                return (
                 <li key={channel._id}>
                   <button
                     type="button"
-                    className="flex w-full items-center gap-2 rounded-xl px-2 py-1.5 text-left text-gray-700 font-medium text-[13px] hover:bg-white/70"
+                    className={`slack-row w-full justify-start text-left ${isActive ? "is-active" : ""}`}
                     onClick={() => handleChannelChat(channel.name, channel._id, channel.description)}
                   >
-                    <span
-                      className="border items-center flex shrink-0 justify-center w-5 h-5 text-[12px] font-medium text-white"
-                      style={{
-                        backgroundColor: getStableColor(channel?.name),
-                      }}
-                    >
-                      {channel?.name?.charAt(0).toUpperCase()}
+                    <Avatar
+                      name={channel?.name}
+                      src={channel?.image || ""}
+                      size={18}
+                      rounded="rounded-sm"
+                      fontSize="10px"
+                    />
+                    <span className="truncate flex-1 min-w-0 font-medium text-white">
+                      <span className="text-sidebar-muted mr-0.5">#</span>
+                      {channel.name}
                     </span>
-                    <span className="truncate flex-1 min-w-0">{channel.name}</span>
                     {channel?.unreadMessages > 0 && (
-                      <span className="shrink-0 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[11px] font-bold text-green-600">
-                        {channel.unreadMessages}
-                      </span>
+                      <span className="slack-unread">{channel.unreadMessages}</span>
                     )}
                   </button>
                 </li>
-              ))}
+                );
+              })}
             </ul>
             <button
               type="button"
-              className="mt-1 rounded-xl px-2 py-1.5 text-left text-gray-700 text-[13px] hover:bg-white/70"
+              className="slack-row text-sidebar-text/60 hover:text-white w-full mt-1 shrink-0"
               onClick={handleChannel}
             >
-              + Add Channels
+              <span className="w-[18px] h-[18px] rounded-sm bg-sidebar-alt flex items-center justify-center text-sidebar-muted">+</span>
+              <span>Add channel</span>
             </button>
           </div>
 
-          {/* Messages Section */}
-          <div className="flex flex-col min-h-0 flex-[1.15]">
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="text-[15px] font-bold text-gray-600 flex gap-2">
-                Messages <img src={arrow} alt="" className="w-[8px] pt-1" />
-              </h3>
-              <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-gray-500">
-                {employees?.length || 0}
-              </span>
+          {/* Messages Section — also scrolls independently */}
+          <div className="flex flex-col min-h-0 flex-[1.15] mt-1">
+            <div className="slack-section-header shrink-0">
+              <span>Direct messages</span>
             </div>
-            <ul className="mt-2 flex-1 min-h-0 overflow-y-auto pr-1 hide-scrollbar">
-              {employees?.map((user, i) => (
-                <li
-                  key={user.id || i}
-                  className="rounded-xl hover:bg-white/70"
-                  onClick={() => handleChat(user.name, user.id)}
-                >
-                  <p className="flex items-center gap-2 px-2 py-1.5 text-gray-700 text-[13px] font-medium cursor-pointer">
-                    <span
-                      className="border items-center flex shrink-0 justify-center w-5 h-5 text-[12px] font-medium text-white"
-                      style={{
-                        backgroundColor: getStableColor(user?.name),
-                      }}
-                    >
-                      {user?.name?.charAt(0).toUpperCase()}
-                    </span>
-                    <span className="truncate flex-1 min-w-0">{user.name}</span>
+            <ul className="flex-1 min-h-0 overflow-y-auto slack-scroll slack-scroll-dark">
+              {employees?.filter(u =>
+                !sidebarSearch || u.name?.toLowerCase().includes(sidebarSearch.toLowerCase())
+              ).map((user, i) => {
+                const isActive = location.pathname === `/chat/${user.id}`;
+                return (
+                <li key={user.id || i}>
+                  <button
+                    type="button"
+                    onClick={() => handleChat(user.name, user.id)}
+                    className={`slack-row w-full justify-start text-left ${isActive ? "is-active" : ""}`}
+                  >
+                    <Avatar
+                      name={user?.name}
+                      src={user?.avatar || ""}
+                      size={18}
+                      fontSize="10px"
+                    />
+                    <span className="truncate flex-1 min-w-0 font-medium text-white">{user.name}</span>
                     {unreadCounts[user.id] > 0 && openChatId !== user.id && (
-                      <span className="shrink-0 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[11px] font-bold text-green-600">
-                        {unreadCounts[user.id]}
-                      </span>
+                      <span className="slack-unread">{unreadCounts[user.id]}</span>
                     )}
-                  </p>
+                  </button>
                 </li>
-              ))}
+                );
+              })}
             </ul>
             <button
               type="button"
-              className="mt-1 rounded-xl px-2 py-1.5 text-left text-gray-700 text-[13px] hover:bg-white/70"
+              className="slack-row text-sidebar-text/60 hover:text-white w-full mt-1 shrink-0"
               onClick={handleCowrokers}
             >
-              + Add Coworker
+              <span className="w-[18px] h-[18px] rounded-sm bg-sidebar-alt flex items-center justify-center text-sidebar-muted">+</span>
+              <span>Add coworker</span>
             </button>
           </div>
 
@@ -500,6 +564,30 @@ function Sidebarpart() {
             {adminError && (
               <p className="text-xs text-red-500 mt-2">{adminError}</p>
             )}
+            <div className="mt-3">
+              <ProfilePictureUploader
+                name={adminProfile?.name || ""}
+                currentAvatar={adminProfile?.avatar || ""}
+                onUpdated={(profile) => {
+                  if (!profile) return;
+                  setAdminProfile((prev) => ({
+                    ...(prev || {}),
+                    ...profile,
+                  }));
+                  try {
+                    const stored = JSON.parse(
+                      localStorage.getItem("admin") || "null"
+                    );
+                    localStorage.setItem(
+                      "admin",
+                      JSON.stringify({ ...(stored || {}), ...profile })
+                    );
+                  } catch (e) {
+                    // ignore
+                  }
+                }}
+              />
+            </div>
             <div className="mt-3 space-y-3">
               <div>
                 <label className="block text-xs text-gray-600 mb-1">Name</label>

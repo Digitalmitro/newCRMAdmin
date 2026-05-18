@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
+import socket from "../utils/socket";
 
 const AuthContext = createContext();
 
@@ -20,6 +21,37 @@ export const AuthProvider = ({ children }) => {
         } else {
             setUserData(null);
         }
+    }, []);
+
+    // Force-logout listener — fires when an admin soft-deletes this user
+    // (feature #11) or otherwise revokes access. Clearing token + redirecting
+    // ensures any open tab can't keep using the now-invalid JWT.
+    useEffect(() => {
+        const handleForceLogout = (payload) => {
+            try {
+                localStorage.removeItem("token");
+                localStorage.removeItem("admin");
+            } catch (e) {
+                // ignore
+            }
+            setToken(null);
+            setUserData(null);
+            const reason =
+                (payload && payload.reason) ||
+                "Your session has been ended by an administrator.";
+            try {
+                alert(reason);
+            } catch (e) {
+                // ignore
+            }
+            if (typeof window !== "undefined") {
+                window.location.href = "/login";
+            }
+        };
+        socket.on("force-logout", handleForceLogout);
+        return () => {
+            socket.off("force-logout", handleForceLogout);
+        };
     }, []);
 
 
