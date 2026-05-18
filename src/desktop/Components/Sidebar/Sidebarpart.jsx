@@ -1,4 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { createPortal } from "react-dom";
 import home from "../../../assets/desktop/home.svg";
 import attendence from "../../../assets/desktop/attendence.svg";
 import bidirection from "../../../assets/desktop/bidirection.svg";
@@ -484,8 +485,8 @@ function Sidebarpart() {
         )}
       </div>
 
-      {isEditAdminOpen && (
-        <div className="fixed inset-0 bg-black/40 z-[200] flex items-center justify-center">
+      {isEditAdminOpen && createPortal(
+        <div className="fixed inset-0 bg-black/40 z-[9999] flex items-center justify-center">
           <div className="bg-white w-full max-w-md rounded-lg shadow-lg p-4">
             <div className="flex items-center justify-between border-b pb-2">
               <h3 className="text-sm font-semibold">Edit Admin Profile</h3>
@@ -582,7 +583,7 @@ function Sidebarpart() {
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
     </div>
   );
 }
