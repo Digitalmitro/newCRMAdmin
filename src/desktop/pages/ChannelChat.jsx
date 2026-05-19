@@ -885,20 +885,7 @@ const ChannelChat = () => {
     if (isLikelyAttachment(value)) {
       return <FilePreview url={value} />;
     }
-    if (typeof value === "string" && value.startsWith("http")) {
-      return (
-        <a
-          href={value}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`underline break-words break-all ${
-            isSelf ? "text-blue-700" : "text-blue-600"
-          }`}
-        >
-          {value}
-        </a>
-      );
-    }
+    // Always tokenise — handles single link, multiple links, mixed text+links.
     const tokens = tokenizeMessage(value || "", mentionIdToName);
     return (
       <span className="whitespace-pre-wrap break-words overflow-auto">
