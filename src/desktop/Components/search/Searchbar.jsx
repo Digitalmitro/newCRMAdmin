@@ -132,7 +132,7 @@ function Searchbar() {
       <div
         className={`notification-drawer fixed right-0 top-0 z-50 flex h-screen w-[380px] max-w-[calc(100vw-20px)] flex-col p-4 shadow-2xl transition-transform ${
           isSidebarOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        }`} style="background:white;"
       >
         <div className="flex items-center justify-between border-b border-slate-200 pb-4">
           <div>
