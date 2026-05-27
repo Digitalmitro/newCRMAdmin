@@ -13,7 +13,7 @@ import logo from "../../../assets/desktop/logo.svg";
 import { TbBrandDatabricks } from "react-icons/tb";
 import { BiStreetView } from "react-icons/bi";
 import { MdOutlineTaskAlt, MdOutlineTableChart } from "react-icons/md";
-import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { FiChevronLeft, FiChevronRight, FiShield } from "react-icons/fi";
 import { useAuth } from "../../../context/authContext";
 import { useEffect, useState } from "react";
 import socket from "../../../utils/socket";
@@ -44,12 +44,13 @@ function Sidebarpart() {
   const [adminProfile, setAdminProfile] = useState(() => {
     const stored = localStorage.getItem("admin");
     if (!stored) return null;
-    try {
-      return JSON.parse(stored);
-    } catch (error) {
-      return null;
-    }
+    try { return JSON.parse(stored); } catch { return null; }
   });
+
+  // Role + permissions from localStorage (populated on login)
+  const isSuperAdmin = adminProfile?.role === "superadmin";
+  const perms = adminProfile?.permissions || {};
+  const can = (resource, action) => isSuperAdmin || perms?.[resource]?.[action] === true;
   const [isEditAdminOpen, setIsEditAdminOpen] = useState(false);
   const [adminForm, setAdminForm] = useState({
     name: "",
@@ -374,19 +375,29 @@ function Sidebarpart() {
             <img src={notes} alt="" className="h-[18px] w-[18px] invert" />
             <p className="text-[11px] font-semibold mt-0.5">Notifications</p>
           </Link>
-          <Link to="/all-tasks" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white relative">
-            <MdOutlineTaskAlt size={22} />
-            <p className="text-[11px] font-semibold mt-0.5">Tasks</p>
-            {pendingTasks > 0 && (
-              <span className="absolute top-1 right-1 slack-unread">
-                {pendingTasks > 99 ? "99+" : pendingTasks}
-              </span>
-            )}
-          </Link>
-          <Link to="/salary-sheet" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
-            <MdOutlineTableChart size={22} />
-            <p className="text-[11px] font-semibold mt-0.5">Salary</p>
-          </Link>
+          {(isSuperAdmin || can("taskManagement", "access")) && (
+            <Link to="/all-tasks" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white relative">
+              <MdOutlineTaskAlt size={22} />
+              <p className="text-[11px] font-semibold mt-0.5">Tasks</p>
+              {pendingTasks > 0 && (
+                <span className="absolute top-1 right-1 slack-unread">
+                  {pendingTasks > 99 ? "99+" : pendingTasks}
+                </span>
+              )}
+            </Link>
+          )}
+          {(isSuperAdmin || can("salary", "upload") || can("salary", "revoke")) && (
+            <Link to="/salary-sheet" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+              <MdOutlineTableChart size={22} />
+              <p className="text-[11px] font-semibold mt-0.5">Salary</p>
+            </Link>
+          )}
+          {isSuperAdmin && (
+            <Link to="/manage-admins" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+              <FiShield size={20} />
+              <p className="text-[11px] font-semibold mt-0.5">Admins</p>
+            </Link>
+          )}
         </nav>
 
         <button
