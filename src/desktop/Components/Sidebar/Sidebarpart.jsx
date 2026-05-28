@@ -340,42 +340,56 @@ function Sidebarpart() {
             <img src={home} alt="" className="h-[20px] w-[20px] invert" />
             <p className="text-[11px] font-semibold mt-0.5">Home</p>
           </Link>
-          <Link to="/attendance" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
-            <img src={attendence} alt="" className="h-[18px] w-[18px] invert" />
-            <p className="text-[11px] font-semibold mt-0.5">Attendance</p>
-          </Link>
-          <Link to="/notes" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
-            <img src={book} alt="" className="h-[18px] w-[18px] invert" />
-            <p className="text-[11px] font-semibold mt-0.5">Notes</p>
-          </Link>
-          <Link to="/callbacklist" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
-            <img src={calls} alt="" className="h-[20px] w-[20px] invert" />
-            <p className="text-[11px] font-semibold mt-0.5">Callback</p>
-          </Link>
-          <Link to="/transferlist" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
-            <img src={bidirection} alt="" className="h-[18px] w-[18px] invert" />
-            <p className="text-[11px] font-semibold mt-0.5">Transfer</p>
-          </Link>
-          <Link to="/saleslist" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
-            <img src={sales} alt="" className="h-[20px] w-[20px] invert" />
-            <p className="text-[11px] font-semibold mt-0.5">Sales</p>
-          </Link>
-          <Link to="/employee" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
-            <BiStreetView size={22} />
-            <p className="text-[11px] font-semibold mt-0.5">Activity</p>
-          </Link>
-          <Link to="/concern" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white relative">
-            <TbBrandDatabricks size={20} />
-            <p className="text-[11px] font-semibold mt-0.5">Concern</p>
-            {pendingConcerns > 0 && (
-              <span className="absolute top-1 right-1 slack-unread">{pendingConcerns}</span>
-            )}
-          </Link>
+          {(isSuperAdmin || can("attendance", "access")) && (
+            <Link to="/attendance" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+              <img src={attendence} alt="" className="h-[18px] w-[18px] invert" />
+              <p className="text-[11px] font-semibold mt-0.5">Attendance</p>
+            </Link>
+          )}
+          {(isSuperAdmin || can("notes", "access")) && (
+            <Link to="/notes" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+              <img src={book} alt="" className="h-[18px] w-[18px] invert" />
+              <p className="text-[11px] font-semibold mt-0.5">Notes</p>
+            </Link>
+          )}
+          {(isSuperAdmin || can("callbacks", "access")) && (
+            <Link to="/callbacklist" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+              <img src={calls} alt="" className="h-[20px] w-[20px] invert" />
+              <p className="text-[11px] font-semibold mt-0.5">Callback</p>
+            </Link>
+          )}
+          {(isSuperAdmin || can("transfer", "access")) && (
+            <Link to="/transferlist" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+              <img src={bidirection} alt="" className="h-[18px] w-[18px] invert" />
+              <p className="text-[11px] font-semibold mt-0.5">Transfer</p>
+            </Link>
+          )}
+          {(isSuperAdmin || can("sales", "access")) && (
+            <Link to="/saleslist" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+              <img src={sales} alt="" className="h-[20px] w-[20px] invert" />
+              <p className="text-[11px] font-semibold mt-0.5">Sales</p>
+            </Link>
+          )}
+          {(isSuperAdmin || can("activity", "access")) && (
+            <Link to="/employee" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+              <BiStreetView size={22} />
+              <p className="text-[11px] font-semibold mt-0.5">Activity</p>
+            </Link>
+          )}
+          {(isSuperAdmin || can("concern", "access")) && (
+            <Link to="/concern" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white relative">
+              <TbBrandDatabricks size={20} />
+              <p className="text-[11px] font-semibold mt-0.5">Concern</p>
+              {pendingConcerns > 0 && (
+                <span className="absolute top-1 right-1 slack-unread">{pendingConcerns}</span>
+              )}
+            </Link>
+          )}
           <Link to="/notification" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
             <img src={notes} alt="" className="h-[18px] w-[18px] invert" />
             <p className="text-[11px] font-semibold mt-0.5">Notifications</p>
           </Link>
-          {(isSuperAdmin || can("taskManagement", "access")) && (
+          {(isSuperAdmin || can("tasks", "access")) && (
             <Link to="/all-tasks" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white relative">
               <MdOutlineTaskAlt size={22} />
               <p className="text-[11px] font-semibold mt-0.5">Tasks</p>
@@ -386,7 +400,7 @@ function Sidebarpart() {
               )}
             </Link>
           )}
-          {(isSuperAdmin || can("salary", "upload") || can("salary", "revoke")) && (
+          {(isSuperAdmin || can("salary", "access")) && (
             <Link to="/salary-sheet" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
               <MdOutlineTableChart size={22} />
               <p className="text-[11px] font-semibold mt-0.5">Salary</p>
