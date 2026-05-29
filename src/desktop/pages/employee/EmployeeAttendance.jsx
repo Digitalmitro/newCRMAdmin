@@ -157,12 +157,18 @@ function EmployeeAttendance() {
               <td className="p-2 border border-gray-300">{emp.ip}</td>
               <td
                 className={`p-2 border font-semibold border-gray-300 ${
-                  emp.workStatus === "Full Day"
+                  emp.punchIn && !emp.punchOut
+                    ? "text-yellow-500"
+                    : emp.workStatus === "Full Day"
                     ? "text-green-500"
+                    : emp.workStatus === "Week-Off" || emp.workStatus === "Weekend"
+                    ? "text-slate-400"
+                    : emp.workStatus === "Leave"
+                    ? "text-blue-500"
                     : "text-red-500"
                 }`}
               >
-                {emp.workStatus}
+                {emp.punchIn && !emp.punchOut ? "Work in progress" : emp.workStatus}
               </td>
             </tr>
           ))}

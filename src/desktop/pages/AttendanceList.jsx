@@ -8,6 +8,9 @@ const statusTone = (value) => {
   if (normalized.includes("late")) return "text-rose-600";
   if (normalized.includes("on time")) return "text-emerald-600";
   if (normalized.includes("absent")) return "text-amber-700";
+  if (normalized.includes("week-off") || normalized.includes("week off")) return "text-slate-400";
+  if (normalized.includes("leave")) return "text-blue-600";
+  if (normalized.includes("work in progress")) return "text-yellow-500";
   return "text-slate-600";
 };
 
@@ -150,7 +153,9 @@ function AttendanceList() {
                         <td
                           className={`border-b border-slate-100 px-4 py-3 font-medium ${statusTone(entry?.workStatus)}`}
                         >
-                          {entry?.workStatus || "--"}
+                          {entry?.punchIn && !entry?.punchOut
+                            ? <span className="text-yellow-500 font-semibold">Work in progress</span>
+                            : entry?.workStatus || "--"}
                         </td>
                       </tr>
                     ))
