@@ -5,8 +5,9 @@ import moment from "moment";
 function EmployeeAttendance() {
   const [attendance, setAttendance] = useState([]);
   const [noDataMessage, setNoDataMessage] = useState("");
-  const [rangeStart, setRangeStart] = useState("");
-  const [rangeEnd, setRangeEnd] = useState("");
+  // Default to current month so the fill-gaps logic always runs
+  const [rangeStart, setRangeStart] = useState(moment().startOf("month").format("YYYY-MM-DD"));
+  const [rangeEnd, setRangeEnd] = useState(moment().format("YYYY-MM-DD"));
   const { id } = useParams();
   const token = localStorage.getItem("token");
 
