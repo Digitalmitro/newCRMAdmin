@@ -36,9 +36,9 @@ function AttendanceList() {
 
   const summary = useMemo(
     () => ({
-      total: attendance.length,
+      total: attendance.filter((e) => e.punchIn && !e.isSynthetic).length,
       late: attendance.filter((entry) => entry?.status === "Late").length,
-      absent: attendance.filter((entry) => entry?.workStatus === "Absent").length,
+      absent: attendance.filter((entry) => entry?.workStatus === "Absent" || entry?.workStatus === "Week-Off").length,
       complete: attendance.filter((entry) => entry?.punchOut).length,
     }),
     [attendance]

@@ -46,10 +46,13 @@ function Home() {
         setEmployeeCount(users.length);
       }
 
-      // Present today
+      // Present today — only count employees who actually punched in (not synthetic absent/week-off rows)
       const attendanceToday = await allUsersAttendance();
       if (attendanceToday) {
-        setPresentCount(attendanceToday.length);
+        const actuallyPresent = attendanceToday.filter(
+          (e) => e.punchIn && !e.isSynthetic
+        );
+        setPresentCount(actuallyPresent.length);
       }
     };
     getData();
