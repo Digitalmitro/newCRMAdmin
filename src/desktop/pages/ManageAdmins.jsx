@@ -96,7 +96,7 @@ function Picker({ items, selected, onToggle, label, icon: Icon, idKey = "_id", n
             <li key={item[idKey]}
               className={`flex items-center gap-2.5 px-3 py-2 cursor-pointer transition-colors ${isSelected ? "bg-purple-50" : "hover:bg-slate-50"}`}
               onClick={() => onToggle(item[idKey])}>
-              <Avatar name={item[nameKey]} src={item[imageKey] || ""} size={28} rounded="rounded-md" />
+              <Avatar name={item[nameKey]} src={item[imageKey] || ""} size={28} fit={imageKey === "image" ? "contain" : "cover"} />
               <span className="text-[13px] text-slate-700 flex-1 truncate">{item[nameKey]}</span>
               {isSelected && <MdCheck size={16} className="text-sidebar-active shrink-0" />}
             </li>

@@ -238,7 +238,7 @@ export default function ChannelUpdateForm({
           name={name || "Channel"}
           src={imagePreview}
           size={56}
-          rounded="rounded-lg"
+          fit="contain"
         />
         <div className="flex flex-col gap-1">
           <input
