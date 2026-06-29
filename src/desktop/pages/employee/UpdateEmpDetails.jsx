@@ -12,6 +12,7 @@ function UpdateEmpDetails() {
     phone: "",
     type: "",
     employeeType: "",
+    jobDescription: "",
   });
   const { id } = useParams();
 
@@ -115,6 +116,18 @@ function UpdateEmpDetails() {
           value={data?.email}
           onChange={handleChange}
           className="w-full px-3 py-2 border rounded-md outline-none border-gray-300"
+        />
+      </div>
+
+      <div className="mb-4">
+        <label className="block text-gray-600 mb-1">Job Description</label>
+        <textarea
+          name="jobDescription"
+          rows={4}
+          placeholder="What does this employee do? Role, responsibilities, etc."
+          value={data?.jobDescription || ""}
+          onChange={handleChange}
+          className="w-full px-3 py-2 border rounded-md outline-none border-gray-300 resize-y"
         />
       </div>
 

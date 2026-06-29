@@ -249,6 +249,7 @@ function Sidebarpart() {
       email: adminProfile?.email || "",
       phone: adminProfile?.phone || "",
       password: "",
+      jobDescription: adminProfile?.jobDescription || "",
     });
     setIsEditAdminOpen(true);
   };
@@ -279,6 +280,7 @@ function Sidebarpart() {
       name: adminForm.name,
       email: adminForm.email,
       phone: adminForm.phone,
+      jobDescription: adminForm.jobDescription,
     };
     if (adminForm.password) {
       payload.password = adminForm.password;
@@ -634,6 +636,17 @@ function Sidebarpart() {
                   value={adminForm.phone}
                   onChange={handleAdminInputChange}
                   className="w-full border border-gray-300 rounded px-3 py-2 text-sm outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Job Description</label>
+                <textarea
+                  name="jobDescription"
+                  rows={3}
+                  placeholder="Your role and responsibilities"
+                  value={adminForm.jobDescription || ""}
+                  onChange={handleAdminInputChange}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm outline-none resize-y"
                 />
               </div>
               <div>

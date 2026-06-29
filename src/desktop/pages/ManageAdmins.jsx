@@ -123,6 +123,7 @@ export default function ManageAdmins() {
   const [allEmployees, setAllEmployees] = useState([]);
   const [allChannels, setAllChannels] = useState([]);
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
+  const [createPerms, setCreatePerms] = useState(JSON.parse(JSON.stringify(EMPTY_PERMS)));
   const [creating, setCreating] = useState(false);
 
   const apiBase = import.meta.env.VITE_BACKEND_API;
@@ -178,6 +179,19 @@ export default function ManageAdmins() {
     setEditingPerms(all);
   };
   const revokeAll = () => setEditingPerms(JSON.parse(JSON.stringify(EMPTY_PERMS)));
+
+  const toggleCreatePerm = (group, action, value) => {
+    setCreatePerms((prev) => ({ ...prev, [group]: { ...prev[group], [action]: value } }));
+  };
+  const createGrantAll = () => {
+    const all = JSON.parse(JSON.stringify(EMPTY_PERMS));
+    SIDEBAR_PERMS.forEach((p) => { all[p.key] = { access: true }; });
+    ACTION_PERMS.forEach((g) => {
+      g.actions.forEach((a) => { if (!all[g.group]) all[g.group] = {}; all[g.group][a.key] = true; });
+    });
+    setCreatePerms(all);
+  };
+  const createRevokeAll = () => setCreatePerms(JSON.parse(JSON.stringify(EMPTY_PERMS)));
 
   const savePermissions = async () => {
     setSaving(true); setError(""); setSuccess("");
@@ -236,12 +250,13 @@ export default function ManageAdmins() {
       const res = await fetch(`${apiBase}/superadmin/admins`, {
         method: "POST",
         headers: { ...authHeader, "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, permissions: EMPTY_PERMS }),
+        body: JSON.stringify({ ...form, permissions: createPerms }),
       });
       const data = await res.json();
       if (!res.ok || !data?.success) throw new Error(data?.message || "Failed");
       setSuccess(`Admin "${form.name}" created.`);
       setForm({ name: "", email: "", phone: "", password: "" });
+      setCreatePerms(JSON.parse(JSON.stringify(EMPTY_PERMS)));
       setShowCreate(false);
       await fetchAdmins();
     } catch (err) { setError(err.message); }
@@ -289,6 +304,61 @@ export default function ManageAdmins() {
                   onChange={(e) => setForm({ ...form, [key]: e.target.value })}
                   className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sidebar-active" />
               ))}
+
+              {/* Permissions — set right here at creation time so the new
+                  admin isn't locked out of everything until someone
+                  remembers to come back and grant access separately. */}
+              <div className="sm:col-span-2 border border-slate-100 rounded-xl p-4 bg-slate-50">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-bold text-slate-600 uppercase tracking-wide">Permissions</p>
+                  <div className="flex items-center gap-2">
+                    <button type="button" onClick={createGrantAll}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-green-50 text-green-700 text-[11px] font-semibold border border-green-200 hover:bg-green-100">
+                      <MdCheck size={12} /> Grant all
+                    </button>
+                    <button type="button" onClick={createRevokeAll}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-50 text-red-600 text-[11px] font-semibold border border-red-200 hover:bg-red-100">
+                      <MdClose size={12} /> None
+                    </button>
+                  </div>
+                </div>
+
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-2">Sidebar access</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
+                  {SIDEBAR_PERMS.map((p) => (
+                    <div key={p.key} className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-slate-100">
+                      <span className="text-[12px] text-slate-700 flex items-center gap-1.5 truncate">
+                        <span>{p.icon}</span>{p.label}
+                      </span>
+                      <Toggle
+                        checked={createPerms[p.key]?.access || false}
+                        onChange={(val) => toggleCreatePerm(p.key, "access", val)}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-2">Actions</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {ACTION_PERMS.map((group) => (
+                    <div key={group.group} className="rounded-lg border border-slate-100 bg-white p-3">
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-2">{group.label}</p>
+                      <div className="space-y-2">
+                        {group.actions.map((action) => (
+                          <div key={action.key} className="flex items-center justify-between gap-2">
+                            <span className="text-[12px] text-slate-700">{action.label}</span>
+                            <Toggle
+                              checked={createPerms[group.group]?.[action.key] || false}
+                              onChange={(val) => toggleCreatePerm(group.group, action.key, val)}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <div className="sm:col-span-2 flex justify-end">
                 <button type="submit" disabled={creating}
                   className="px-5 py-2 rounded-xl bg-sidebar text-white text-sm font-semibold disabled:opacity-50">
@@ -296,7 +366,7 @@ export default function ManageAdmins() {
                 </button>
               </div>
             </form>
-            <p className="text-xs text-slate-400 mt-2">New admin starts with all permissions off.</p>
+            <p className="text-xs text-slate-400 mt-2">Scope (which employees/channels this admin can manage) defaults to "all" — adjust it after creation from the admin's row if needed.</p>
           </div>
         )}
 
