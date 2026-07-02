@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import moment from "moment";
-import { MdUploadFile, MdDeleteOutline, MdTableChart, MdCheckCircle } from "react-icons/md";
-import { FiCalendar, FiDownload } from "react-icons/fi";
+import { MdUploadFile, MdDeleteOutline, MdTableChart, MdCheckCircle, MdPictureAsPdf, MdPersonAdd } from "react-icons/md";
+import { FiCalendar, FiDownload, FiX } from "react-icons/fi";
 
 const MONTHS = [
   "January","February","March","April","May","June",
@@ -285,6 +285,112 @@ export default function AdminSalarySheet() {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Bulk Payslip Upload ──────────────────────────────────────────────────────
+export function BulkPayslipUpload() {
+  const apiBase = import.meta.env.VITE_BACKEND_API;
+  const token = localStorage.getItem("token");
+  const authHeader = { Authorization: `Bearer ${token}` };
+  const currentYr = new Date().getFullYear();
+
+  const [month, setMonth]     = useState(new Date().getMonth() + 1);
+  const [year, setYear]       = useState(currentYr);
+  const [employees, setEmps]  = useState([]);
+  const [files, setFiles]     = useState([]);
+  const [uploading, setUp]    = useState(false);
+  const [result, setResult]   = useState(null);
+  const [error, setError]     = useState("");
+  const fileRef = useRef(null);
+
+  useEffect(() => {
+    fetch(`${apiBase}/auth/all`, { headers: authHeader })
+      .then((r) => r.json())
+      .then((d) => { if (d?.users) setEmps(d.users); })
+      .catch(() => {});
+  }, []);
+
+  const addFiles = (e) => {
+    const picked = Array.from(e.target.files || []).filter((f) => f.type === "application/pdf");
+    setFiles((prev) => [...prev, ...picked.map((f) => ({ file: f, name: f.name, employeeId: "" }))]);
+    e.target.value = "";
+  };
+
+  const handleUpload = async () => {
+    if (!files.length) { setError("Pick at least one PDF."); return; }
+    const bad = files.filter((f) => !f.employeeId).length;
+    if (bad) { setError(`Assign every file to an employee (${bad} unassigned).`); return; }
+    setUp(true); setError(""); setResult(null);
+    const mapping = {};
+    files.forEach((f) => { mapping[f.name] = f.employeeId; });
+    const fd = new FormData();
+    fd.append("year", year); fd.append("month", month);
+    fd.append("mapping", JSON.stringify(mapping));
+    files.forEach((f) => fd.append("files", f.file, f.name));
+    try {
+      const res = await fetch(`${apiBase}/payslips/bulk`, { method: "POST", headers: authHeader, body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Upload failed.");
+      setResult(data);
+      if (data.failed === 0) setFiles([]);
+    } catch (err) { setError(err.message); }
+    finally { setUp(false); }
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto p-6">
+      <h2 className="text-[15px] font-bold text-slate-800 mb-1">Bulk Upload Payslips</h2>
+      <p className="text-sm text-slate-500 mb-5">One PDF per employee for a month — uploaded all at once.</p>
+
+      <div className="flex gap-3 mb-5 flex-wrap">
+        <select value={month} onChange={(e) => setMonth(+e.target.value)} className="border border-slate-200 rounded-lg px-3 py-2 text-sm">
+          {MONTHS.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
+        </select>
+        <select value={year} onChange={(e) => setYear(+e.target.value)} className="border border-slate-200 rounded-lg px-3 py-2 text-sm">
+          {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
+        </select>
+        <input ref={fileRef} type="file" accept=".pdf" multiple className="hidden" onChange={addFiles} />
+        <button type="button" onClick={() => fileRef.current?.click()}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 text-sm font-semibold hover:bg-indigo-100">
+          <MdPictureAsPdf size={17} /> Add PDFs
+        </button>
+      </div>
+
+      {files.length > 0 && (
+        <div className="space-y-2 mb-5">
+          {files.map((f, idx) => (
+            <div key={idx} className="flex items-center gap-3 p-3 border border-slate-100 rounded-xl bg-white">
+              <MdPictureAsPdf size={20} className="text-red-500 shrink-0" />
+              <span className="text-sm text-slate-700 truncate flex-1 min-w-0">{f.name}</span>
+              <select value={f.employeeId}
+                onChange={(e) => setFiles((p) => p.map((x, i) => i === idx ? { ...x, employeeId: e.target.value } : x))}
+                className={`border rounded-lg px-2 py-1 text-sm w-44 shrink-0 ${!f.employeeId ? "border-amber-300 bg-amber-50" : "border-slate-200"}`}>
+                <option value="">Assign to…</option>
+                {employees.map((emp) => <option key={emp._id} value={emp._id}>{emp.name}</option>)}
+              </select>
+              <button type="button" onClick={() => setFiles((p) => p.filter((_, i) => i !== idx))} className="text-slate-400 hover:text-red-500">
+                <FiX size={16} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
+      {result && (
+        <div className={`rounded-xl p-4 mb-4 text-sm border ${result.failed === 0 ? "bg-green-50 text-green-700 border-green-200" : "bg-amber-50 text-amber-700 border-amber-200"}`}>
+          <p className="font-semibold">{result.uploaded} uploaded, {result.failed} failed.</p>
+          {result.errors?.map((e, i) => <p key={i} className="text-[11px] mt-1">{e.file}: {e.error}</p>)}
+        </div>
+      )}
+
+      <button type="button" disabled={uploading || !files.length} onClick={handleUpload}
+        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sidebar text-white text-sm font-semibold disabled:opacity-50 hover:opacity-90">
+        <MdUploadFile size={18} />
+        {uploading ? "Uploading…" : `Upload ${files.length || ""} Payslip${files.length === 1 ? "" : "s"}`}
+      </button>
     </div>
   );
 }
