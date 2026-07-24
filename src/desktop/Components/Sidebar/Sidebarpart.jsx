@@ -145,7 +145,14 @@ function Sidebarpart() {
       }
     };
     fetchPendingConcerns();
+    const concernInterval = setInterval(fetchPendingConcerns, 60_000);
+    const onConcernFocus = () => fetchPendingConcerns();
+    window.addEventListener("focus", onConcernFocus);
     socket.on("soft-refresh", fetchPendingConcerns);
+    // Immediate same-tab signal from Concern.jsx right after an
+    // approve/reject — don't wait on the socket round-trip for the admin
+    // who just took the action.
+    window.addEventListener("concern-status-changed", fetchPendingConcerns);
 
     // Pending tasks badge
     const fetchPendingTasks = async () => {
@@ -184,6 +191,9 @@ function Sidebarpart() {
       socket.off("soft-refresh", fetchPendingConcerns);
       socket.off("soft-refresh", fetchPendingTasks);
       socket.off("new-channel-message", onNewChannelMessage);
+      window.removeEventListener("concern-status-changed", fetchPendingConcerns);
+      clearInterval(concernInterval);
+      window.removeEventListener("focus", onConcernFocus);
       clearInterval(taskInterval);
       window.removeEventListener("focus", onFocus);
       socket.disconnect();
