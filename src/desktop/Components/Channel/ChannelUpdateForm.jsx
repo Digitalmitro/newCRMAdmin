@@ -162,7 +162,7 @@ export default function ChannelUpdateForm({
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data?.success) {
-        throw new Error(data?.error || "Upload failed");
+        throw new Error(data?.message || data?.error || "Upload failed");
       }
       setImagePreview(data.image || "");
     } catch (err) {
@@ -203,7 +203,7 @@ export default function ChannelUpdateForm({
       });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData?.error || "Update failed");
+        throw new Error(errorData?.message || errorData?.error || "Update failed");
       }
       if (typeof onUpdated === "function") {
         onUpdated();

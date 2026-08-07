@@ -720,6 +720,12 @@ const ChannelTaskManager = ({
         return false;
       }
       fetchTasks();
+      if (payload && Object.prototype.hasOwnProperty.call(payload, "status")) {
+        // Sidebar's pending-tasks badge listens for this in the same tab —
+        // a direct, immediate signal rather than relying solely on the
+        // soft-refresh socket round-trip for whoever just changed the status.
+        window.dispatchEvent(new Event("task-status-changed"));
+      }
       return true;
     } catch (patchError) {
       setError("Unable to update task.");

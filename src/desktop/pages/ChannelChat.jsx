@@ -806,7 +806,7 @@ const ChannelChat = () => {
       );
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        alert(data?.error || "Could not delete channel");
+        alert(data?.message || data?.error || "Could not delete channel");
         return;
       }
       navigate("/channels");
@@ -947,6 +947,12 @@ const ChannelChat = () => {
           ...curr,
           [taskNumber]: data.task,
         }));
+        // Sidebar's pending-tasks badge listens for this in the same tab —
+        // a direct, immediate signal rather than relying solely on the
+        // soft-refresh socket round-trip. This quick-action path is likely
+        // used far more often than the full Task Manager panel, so it
+        // matters at least as much that this one fires it.
+        window.dispatchEvent(new Event("task-status-changed"));
       }
     } catch (e) {
       // ignore

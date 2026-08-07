@@ -156,7 +156,19 @@ export default function ManageAdmins() {
   const openAdmin = (admin) => {
     setSelected(admin);
     setActiveTab("sidebar");
-    setEditingPerms(JSON.parse(JSON.stringify(admin.permissions && Object.keys(admin.permissions).length ? admin.permissions : EMPTY_PERMS)));
+    // Deep-merge onto EMPTY_PERMS rather than trusting admin.permissions is
+    // complete. If it's ever missing a group — an old admin document from
+    // before some permission group existed, a partial write, anything —
+    // savePermissions sends this whole object back with $set, so a missing
+    // group here would silently wipe it out in the database rather than
+    // leaving it untouched.
+    const basePerms = JSON.parse(JSON.stringify(EMPTY_PERMS));
+    const savedPerms = admin.permissions || {};
+    const mergedPerms = Object.keys(basePerms).reduce((acc, group) => {
+      acc[group] = { ...basePerms[group], ...(savedPerms[group] || {}) };
+      return acc;
+    }, {});
+    setEditingPerms(mergedPerms);
     setEditingScope({
       allEmployees: admin.allEmployees !== false,
       allowedEmployees: (admin.allowedEmployees || []).map((id) => id._id || id.toString()),

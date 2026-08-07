@@ -171,6 +171,10 @@ function Sidebarpart() {
     const onFocus = () => fetchPendingTasks();
     window.addEventListener("focus", onFocus);
     socket.on("soft-refresh", fetchPendingTasks);
+    // Immediate same-tab signal from ChannelTaskManager.jsx right after a
+    // status change — don't wait on the socket round-trip for the admin
+    // who just took the action.
+    window.addEventListener("task-status-changed", fetchPendingTasks);
 
     // Bubble channel to top on new message (WhatsApp-style)
     const onNewChannelMessage = (msg) => {
@@ -192,6 +196,7 @@ function Sidebarpart() {
       socket.off("soft-refresh", fetchPendingTasks);
       socket.off("new-channel-message", onNewChannelMessage);
       window.removeEventListener("concern-status-changed", fetchPendingConcerns);
+      window.removeEventListener("task-status-changed", fetchPendingTasks);
       clearInterval(concernInterval);
       window.removeEventListener("focus", onConcernFocus);
       clearInterval(taskInterval);
