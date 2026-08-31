@@ -43,7 +43,13 @@ function Concern() {
         }
       );
 
-      getAllConcerns();
+      if (response.ok) {
+        getAllConcerns();
+        // Sidebar's pending-concerns badge listens for this in the same tab
+        // — a direct, immediate signal rather than relying solely on the
+        // soft-refresh socket round-trip for the admin who just acted.
+        window.dispatchEvent(new Event("concern-status-changed"));
+      }
     } catch (error) {
       //(error);
     }
@@ -61,7 +67,10 @@ function Concern() {
         }
       );
 
-      getAllConcerns();
+      if (response.ok) {
+        getAllConcerns();
+        window.dispatchEvent(new Event("concern-status-changed"));
+      }
     } catch (error) {
       //(error);
     }
@@ -135,7 +144,7 @@ function Concern() {
                         className="bg-red-500 text-white px-4.5 py-1 rounded"
                         onClick={() => handleDeny(con?.user_id?._id, con?._id)}
                       >
-                        Deny
+                       &nbsp;&nbsp;&nbsp; Deny &nbsp;&nbsp;&nbsp;
                       </button>
                     </>
                   )}

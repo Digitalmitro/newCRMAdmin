@@ -28,8 +28,8 @@ function Attendance() {
   }, []);
 
   return (
-    <div className="mt-10 px-4">
-      <div className="overflow-auto max-h-[450px] border border-gray-300 shadow-lg rounded-lg">
+    <div className="mt-6 lg:mt-10 px-2 lg:px-4">
+      <div className="overflow-auto border border-gray-300 shadow-lg rounded-lg max-h-full lg:max-h-[450px]">
         <table className="w-full border-collapse">
           {/* Table Header */}
           <thead className="bg-orange-500 text-white text-[14px] sticky top-0 z-10">
