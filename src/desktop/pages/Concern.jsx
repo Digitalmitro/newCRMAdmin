@@ -76,11 +76,9 @@ function Concern() {
     }
   };
 
-  const sortedConcerns = [...concerns].sort((a, b) => {
-    if (a.status === "Pending") return -1;
-    if (b.status === "Pending") return 1;
-    return 0;
-  });
+  // Backend already returns these sorted by createdAt descending (latest
+  // first) - was previously re-sorted here to group all "Pending" items
+  // first, which silently broke pure date ordering.
 
   return (
     <div className="p-4 mt-6">
@@ -99,7 +97,7 @@ function Concern() {
             </tr>
           </thead>
           <tbody className="bg-gray-100 text-gray-700 text-[13px]">
-            {sortedConcerns.map((con, i) => (
+            {concerns.map((con, i) => (
               <tr
                 className="hover:bg-orange-100 transition-all duration-200 text-center"
                 key={i}
