@@ -1,4 +1,5 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { createPortal } from "react-dom";
 import home from "../../../assets/desktop/home.svg";
 import attendence from "../../../assets/desktop/attendence.svg";
 import bidirection from "../../../assets/desktop/bidirection.svg";
@@ -11,42 +12,195 @@ import edit from "../../../assets/desktop/edit.svg";
 import logo from "../../../assets/desktop/logo.svg";
 import { TbBrandDatabricks } from "react-icons/tb";
 import { BiStreetView } from "react-icons/bi";
+import { MdOutlineTaskAlt, MdOutlineTableChart, MdPictureAsPdf } from "react-icons/md";
+import { FiChevronLeft, FiChevronRight, FiShield } from "react-icons/fi";
 import { useAuth } from "../../../context/authContext";
 import { useEffect, useState } from "react";
 import socket from "../../../utils/socket";
 import axios from "axios";
+import Avatar from "../Common/Avatar";
+import ProfilePictureUploader from "../Common/ProfilePictureUploader";
+
+const getStableColor = (text = "DM") => {
+  let hash = 0;
+  for (let i = 0; i < text.length; i += 1) {
+    hash = text.charCodeAt(i) + ((hash << 5) - hash);
+    hash |= 0; // Convert to 32bit integer
+  }
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue}, 70%, 40%)`;
+};
 function Sidebarpart() {
+  const SIDEBAR_PREF_KEY = "dm_admin_desktop_sidebar_collapsed";
   const { getChannels } = useAuth();
-  const [unreadCounts, setUnreadCounts] = useState(0);
+  const [unreadCounts, setUnreadCounts] = useState({});
   const [employees, setEmployees] = useState([]);
   const [channels, setChannels] = useState([]);
-  const { getAllRecentUsers, userData } = useAuth();
+  const { getAllRecentUsers } = useAuth();
   const [openChatId, setOpenChatId] = useState(null);
+  const [pendingConcerns, setPendingConcerns] = useState(0);
+  const [pendingTasks, setPendingTasks] = useState(0);
+  const [sidebarSearch, setSidebarSearch] = useState("");
+  const [adminProfile, setAdminProfile] = useState(() => {
+    const stored = localStorage.getItem("admin");
+    if (!stored) return null;
+    try { return JSON.parse(stored); } catch { return null; }
+  });
+
+  // Role + permissions from localStorage (populated on login)
+  const isSuperAdmin = adminProfile?.role === "superadmin";
+  const perms = adminProfile?.permissions || {};
+  const can = (resource, action) => isSuperAdmin || perms?.[resource]?.[action] === true;
+  const [isEditAdminOpen, setIsEditAdminOpen] = useState(false);
+  const [adminForm, setAdminForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+  });
+  const [adminSaving, setAdminSaving] = useState(false);
+  const [adminError, setAdminError] = useState("");
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem(SIDEBAR_PREF_KEY) === "1";
+    } catch (error) {
+      return false;
+    }
+  });
   const navigate = useNavigate();
+  const location = useLocation();
+  const totalChannelUnread = channels.reduce(
+    (sum, channel) => sum + (channel?.unreadMessages || 0),
+    0
+  );
 
   const channel = async () => {
     const data = await getChannels();
     setChannels(data);
   };
   const allUsers = async () => {
-    const users = await getAllRecentUsers();
+    const users = (await getAllRecentUsers()) || [];
     const unreadCounts = {};
-    users.forEach(user => {
+    users.forEach((user) => {
       unreadCounts[user.id] = user.unreadMessages || 0;
     });
     setUnreadCounts(unreadCounts);
     setEmployees(users);
   };
 
+  const loadAdminProfile = async () => {
+    const stored = localStorage.getItem("admin");
+    if (stored) {
+      try {
+        setAdminProfile(JSON.parse(stored));
+      } catch (error) {
+        setAdminProfile(null);
+      }
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_API}/auth/admin/profile`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        if (data?.admin) {
+          setAdminProfile(data.admin);
+          localStorage.setItem("admin", JSON.stringify(data.admin));
+        }
+      }
+    } catch (error) {
+      //(error);
+    }
+  };
+
   useEffect(() => {
     channel();
     allUsers();
+    loadAdminProfile();
     socket.on("updateUnread", async () => {
-      allUsers()
+      allUsers();
+      channel();
     });
+    const fetchPendingConcerns = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_API}/concern/pending-count`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setPendingConcerns(data?.count || 0);
+        }
+      } catch (error) {
+        //(error);
+      }
+    };
+    fetchPendingConcerns();
+    const concernInterval = setInterval(fetchPendingConcerns, 60_000);
+    const onConcernFocus = () => fetchPendingConcerns();
+    window.addEventListener("focus", onConcernFocus);
+    socket.on("soft-refresh", fetchPendingConcerns);
+    // Immediate same-tab signal from Concern.jsx right after an
+    // approve/reject — don't wait on the socket round-trip for the admin
+    // who just took the action.
+    window.addEventListener("concern-status-changed", fetchPendingConcerns);
+
+    // Pending tasks badge
+    const fetchPendingTasks = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      try {
+        const r = await fetch(
+          `${import.meta.env.VITE_BACKEND_API}/channels/tasks/count`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (r.ok) { const d = await r.json(); setPendingTasks(d?.pendingCount || 0); }
+      } catch (_) {}
+    };
+    fetchPendingTasks();
+    const taskInterval = setInterval(fetchPendingTasks, 60_000);
+    const onFocus = () => fetchPendingTasks();
+    window.addEventListener("focus", onFocus);
+    socket.on("soft-refresh", fetchPendingTasks);
+    // Immediate same-tab signal from ChannelTaskManager.jsx right after a
+    // status change — don't wait on the socket round-trip for the admin
+    // who just took the action.
+    window.addEventListener("task-status-changed", fetchPendingTasks);
+
+    // Bubble channel to top on new message (WhatsApp-style)
+    const onNewChannelMessage = (msg) => {
+      if (!msg?.channelId) return;
+      setChannels((prev) => {
+        const idx = prev.findIndex((c) => c._id?.toString() === msg.channelId?.toString());
+        if (idx <= 0) return prev;
+        const updated = [...prev];
+        const [moved] = updated.splice(idx, 1);
+        updated.unshift({ ...moved, lastMessageTime: new Date().toISOString() });
+        return updated;
+      });
+    };
+    socket.on("new-channel-message", onNewChannelMessage);
 
     return () => {
       socket.off("updateUnread");
+      socket.off("soft-refresh", fetchPendingConcerns);
+      socket.off("soft-refresh", fetchPendingTasks);
+      socket.off("new-channel-message", onNewChannelMessage);
+      window.removeEventListener("concern-status-changed", fetchPendingConcerns);
+      window.removeEventListener("task-status-changed", fetchPendingTasks);
+      clearInterval(concernInterval);
+      window.removeEventListener("focus", onConcernFocus);
+      clearInterval(taskInterval);
+      window.removeEventListener("focus", onFocus);
       socket.disconnect();
     };
   }, []);
@@ -58,17 +212,11 @@ function Sidebarpart() {
     } else {
       setOpenChatId(null);
     }
-  }, [location]);
+  }, [location.state]);
 
   const handleCowrokers = () => {
     navigate("/addCoworker");
   };
-  const handleCowrokersNotes = () => {
-    navigate("/addCoworker", {
-      state: { from: "/notes" }
-    });
-  };
-
   const handleChat = async (name, id) => {
 
     //(id);
@@ -93,6 +241,13 @@ function Sidebarpart() {
     navigate("/create-channel");
   };
   const handleChannelChat = (name, id, description) => {
+    setChannels((prev) =>
+      prev.map((channel) =>
+        channel?._id?.toString() === id?.toString()
+          ? { ...channel, unreadMessages: 0 }
+          : channel
+      )
+    );
     navigate(`/channelchat/${id}`, {
       state: {
         name,
@@ -102,207 +257,456 @@ function Sidebarpart() {
     });
   };
 
-  const handleNotes = (name, id) => {
-    navigate("/notes", {
-      state: {
-        name,
-        id,
-      },
+  const handleEditAdminOpen = () => {
+    setAdminError("");
+    setAdminForm({
+      name: adminProfile?.name || "",
+      email: adminProfile?.email || "",
+      phone: adminProfile?.phone || "",
+      password: "",
+      jobDescription: adminProfile?.jobDescription || "",
+    });
+    setIsEditAdminOpen(true);
+  };
+
+  const handleEditAdminClose = () => {
+    setIsEditAdminOpen(false);
+    setAdminError("");
+  };
+
+  const handleAdminInputChange = (e) => {
+    const { name, value } = e.target;
+    setAdminForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAdminSave = async () => {
+    if (adminSaving) return;
+    setAdminSaving(true);
+    setAdminError("");
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setAdminError("Please log in again.");
+      setAdminSaving(false);
+      return;
+    }
+
+    const payload = {
+      name: adminForm.name,
+      email: adminForm.email,
+      phone: adminForm.phone,
+      jobDescription: adminForm.jobDescription,
+    };
+    if (adminForm.password) {
+      payload.password = adminForm.password;
+    }
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_API}/auth/admin/profile`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        setAdminError(data?.message || "Unable to update profile.");
+        setAdminSaving(false);
+        return;
+      }
+      const data = await response.json();
+      const updated = data?.admin || null;
+      if (updated) {
+        setAdminProfile(updated);
+        localStorage.setItem("admin", JSON.stringify(updated));
+      }
+      setIsEditAdminOpen(false);
+    } catch (error) {
+      setAdminError("Unable to update profile.");
+    } finally {
+      setAdminSaving(false);
+    }
+  };
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem(SIDEBAR_PREF_KEY, next ? "1" : "0");
+      return next;
     });
   };
 
   //(employees);
 
   return (
-    <div className="  flex ">
-      <div className="px-3 pt-2 border border-orange-400">
+    <div className="sticky top-0 flex h-[100dvh] shrink-0 overflow-hidden">
+      <div className="relative h-[100dvh] bg-sidebar text-sidebar-text border-r border-sidebar-divider px-2 pt-2 flex flex-col items-stretch">
         {/* Navigation Links */}
-        <nav className="flex flex-col gap-1  items-center">
-          <Link to="/" className="flex items-center">
-            <div className="flex flex-col items-center">
-              <img src={logo} alt="" className="h-[70px] w-[70px]" />
+        <nav className="flex flex-col gap-0.5 items-stretch">
+          <Link to="/" className="flex flex-col items-center py-2 rounded-md">
+            <div className="flex items-center justify-center w-[50px] h-[50px] rounded-xl bg-white shadow-sm p-1">
+              <img src={logo} alt="" className="h-full w-full object-contain" />
             </div>
           </Link>
-          <Link to="/" className="flex items-center gap-2 p-2 ">
-            <div className="flex flex-col  items-center">
-              <img src={home} alt="" className="h-[25px] w-[25px]" />
-              <p className="text-[12px] font-semibold">Home</p>
-            </div>
+          <Link to="/" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+            <img src={home} alt="" className="h-[20px] w-[20px] invert" />
+            <p className="text-[11px] font-semibold mt-0.5">Home</p>
           </Link>
-          <Link to="/attendance" className="flex items-center gap-2 p-2 ">
-            <div className="flex flex-col   items-center">
-              <img src={attendence} alt="" className="h-[20px] w-[20px]" />
-              <p className="text-[12px] font-semibold">Attendance</p>
-            </div>
+          {(isSuperAdmin || can("attendance", "access")) && (
+            <Link to="/attendance" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+              <img src={attendence} alt="" className="h-[18px] w-[18px] invert" />
+              <p className="text-[11px] font-semibold mt-0.5">Attendance</p>
+            </Link>
+          )}
+          {(isSuperAdmin || can("notes", "access")) && (
+            <Link to="/notes" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+              <img src={book} alt="" className="h-[18px] w-[18px] invert" />
+              <p className="text-[11px] font-semibold mt-0.5">Notes</p>
+            </Link>
+          )}
+          {(isSuperAdmin || can("callbacks", "access")) && (
+            <Link to="/callbacklist" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+              <img src={calls} alt="" className="h-[20px] w-[20px] invert" />
+              <p className="text-[11px] font-semibold mt-0.5">Callback</p>
+            </Link>
+          )}
+          {(isSuperAdmin || can("transfer", "access")) && (
+            <Link to="/transferlist" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+              <img src={bidirection} alt="" className="h-[18px] w-[18px] invert" />
+              <p className="text-[11px] font-semibold mt-0.5">Transfer</p>
+            </Link>
+          )}
+          {(isSuperAdmin || can("sales", "access")) && (
+            <Link to="/saleslist" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+              <img src={sales} alt="" className="h-[20px] w-[20px] invert" />
+              <p className="text-[11px] font-semibold mt-0.5">Sales</p>
+            </Link>
+          )}
+          {(isSuperAdmin || can("activity", "access")) && (
+            <Link to="/employee" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+              <BiStreetView size={22} />
+              <p className="text-[11px] font-semibold mt-0.5">Activity</p>
+            </Link>
+          )}
+          {(isSuperAdmin || can("concern", "access")) && (
+            <Link to="/concern" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white relative">
+              <TbBrandDatabricks size={20} />
+              <p className="text-[11px] font-semibold mt-0.5">Concern</p>
+              {pendingConcerns > 0 && (
+                <span className="absolute top-1 right-1 slack-unread">{pendingConcerns}</span>
+              )}
+            </Link>
+          )}
+          <Link to="/notification" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+            <img src={notes} alt="" className="h-[18px] w-[18px] invert" />
+            <p className="text-[11px] font-semibold mt-0.5">Notifications</p>
           </Link>
-          <Link to="/projects" className="flex items-center gap-2 p-2 ">
-            <div className="flex flex-col  items-center">
-              <img src={book} alt="" className="h-[20px] w-[20px]" />
-              <p className="text-[12px] font-semibold">Projects</p>
-            </div>
-          </Link>
-          <Link to="/callbacklist" className="flex items-center gap-2 p-2 ">
-            <div className="flex flex-col items-center">
-              <img src={calls} alt="" className="h-[25px] w-[25px]" />
-              <p className="text-[12px] font-semibold">Callback</p>
-            </div>
-          </Link>
-          <Link to="/transferlist" className="flex items-center gap-2 p-2">
-            <div className="flex flex-col  items-center">
-              <img src={bidirection} alt="" className="h-[20px] w-[20px]" />
-              <p className="text-[12px] font-semibold">Transfer</p>
-            </div>
-          </Link>
-          <Link to="/saleslist" className="flex items-center gap-2 p-2">
-            <div className="flex flex-col  items-center">
-              <img src={sales} alt="" className="h-[25px] w-[25px]" />
-              <p className="text-[12px] font-semibold">Sales</p>
-            </div>
-          </Link>
-          <Link to="/employee" className="flex items-center gap-2 p-2 ">
-            <div className="flex space-x-2 flex-col   items-center">
-              <BiStreetView size={28} />
-              <p className="text-[12px] font-semibold text-center">Activity </p>
-            </div>
-          </Link>
-          <Link to="/concern" className="flex items-center gap-2 p-2 ">
-            <div className="flex space-x-2 flex-col   items-center">
-              <TbBrandDatabricks size={23} />
-              <p className="text-[12px] font-semibold">Concern</p>
-            </div>
-          </Link>
-          <Link to="/notification" className="flex items-center gap-2 p-2">
-            <div className="flex space-x-2  flex-col items-center">
-              <img src={notes} alt="" className="h-[20px] w-[20px]" />
-              <p className="text-[12px] font-semibold">Notifications </p>
-            </div>
-          </Link>
-
-
+          {(isSuperAdmin || can("tasks", "access")) && (
+            <Link to="/all-tasks" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white relative">
+              <MdOutlineTaskAlt size={22} />
+              <p className="text-[11px] font-semibold mt-0.5">Tasks</p>
+              {pendingTasks > 0 && (
+                <span className="absolute top-1 right-1 slack-unread">
+                  {pendingTasks > 99 ? "99+" : pendingTasks}
+                </span>
+              )}
+            </Link>
+          )}
+          {(isSuperAdmin || can("salary", "access")) && (
+            <Link to="/salary-sheet" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+              <MdOutlineTableChart size={22} />
+              <p className="text-[11px] font-semibold mt-0.5">Salary</p>
+            </Link>
+          )}
+          {(isSuperAdmin || can("payslip", "upload")) && (
+            <Link to="/bulk-payslip" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+              <MdPictureAsPdf size={22} />
+              <p className="text-[11px] font-semibold mt-0.5">Payslips</p>
+            </Link>
+          )}
+          {isSuperAdmin && (
+            <Link to="/manage-admins" className="flex flex-col items-center py-2 rounded-md hover:bg-sidebar-alt text-white">
+              <FiShield size={20} />
+              <p className="text-[11px] font-semibold mt-0.5">Admins</p>
+            </Link>
+          )}
         </nav>
+
+        <button
+          type="button"
+          onClick={toggleSidebar}
+          className="absolute -right-3 top-24 z-20 flex h-6 w-6 items-center justify-center rounded-full border border-sidebar-divider bg-sidebar-alt text-sidebar-text shadow hover:bg-sidebar"
+          title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {isSidebarCollapsed ? <FiChevronRight size={14} /> : <FiChevronLeft size={14} />}
+        </button>
       </div>
 
-      <div className="bg-gray-200 w-[250px] p-4 border border-orange-400">
-        <div className="flex justify-between items-center pt-4 mb-4">
-          <h2 className="text-[18px] font-medium   flex gap-2">
-            Admin
-            <img src={arrow} alt="" className="w-[8px] pt-1" />
-          </h2>
-          <img src={edit} alt="" className="w-[10px] h-[10px]" />
+      <div
+        className={`h-[100dvh] bg-sidebar text-sidebar-text border-r border-sidebar-divider flex min-h-0 flex-col overflow-hidden transition-all duration-300 ${
+          isSidebarCollapsed ? "w-0 p-0 opacity-0 border-l-0 border-r-0 pointer-events-none" : "w-[260px] py-3 opacity-100"
+        }`}
+      >
+        {!isSidebarCollapsed && (
+          <>
+        {/* Workspace header — clickable area opens admin profile editor */}
+        <div className="flex justify-between items-center px-3 pb-3 mb-1 border-b border-sidebar-divider">
+          <button
+            type="button"
+            onClick={handleEditAdminOpen}
+            className="flex items-center gap-2 text-left min-w-0"
+            title="Edit profile"
+          >
+            <Avatar
+              name={adminProfile?.name || "Admin"}
+              src={adminProfile?.avatar || ""}
+              size={32}
+              rounded="rounded-md"
+            />
+            <span className="min-w-0">
+              <span className="block text-[15px] font-bold text-white truncate">
+                {adminProfile?.name || "Admin"}
+              </span>
+              <span className="block text-[11px] text-sidebar-muted truncate">
+                Admin · workspace
+              </span>
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={handleEditAdminOpen}
+            className="text-sidebar-muted hover:text-white"
+            aria-label="Edit profile"
+            title="Edit profile"
+          >
+            <img src={edit} alt="" className="w-[12px] h-[12px] invert opacity-70" />
+          </button>
         </div>
 
-        {/* Channels Section */}
-        <div className="mb-4 pt-8">
-          <h3 className="text-[15px] font-bold text-gray-600 flex gap-2">
-            Channels <img src={arrow} alt="" className="w-[8px] pt-1" />
-          </h3>
-          <ul className="mt-2">
-            {channels?.map((channel) => (
-              <li key={channel._id}>
-                <p
-                  className="block p-2 text-gray-700 font-medium text-[14px] cursor-pointer"
-                  onClick={() => handleChannelChat(channel.name, channel._id, channel.description)}
-                >
-                  <p className="flex space-x-2">
-                    <span
-                      className="border items-center  flex justify-center w-5 h-5 text-[12px] font-medium text-white"
-                      style={{
-                        backgroundColor: `hsl(${Math.floor(Math.random() * 360)}, 70%, 40%)`,
-                      }}
-                    >
-                      {channel?.name?.charAt(0).toUpperCase()}
-                    </span>
-                    <span>{channel.name}</span>
-                  </p>
-
-                </p>
-              </li>
-            ))}
-            <li>
-              <p
-                className="block p-2 text-gray-700 text-[13px] cursor-pointer"
-                onClick={handleChannel}
-              >
-                + Add Channels
-              </p>
-            </li>
-          </ul>
-        </div>
-
-        {/* Messages Section */}
-        <div className="mb-4">
-          <h3 className="text-[15px] font-bold text-gray-600 flex gap-2">
-            Messages <img src={arrow} alt="" className="w-[8px] pt-1" />
-          </h3>
-          <ul className="mt-2">
-            {employees?.slice(0, 4).map((user, i) => (
-              <li
-                key={i}
-                className="block p-2 text-gray-700 text-[14px] font-medium cursor-pointer"
-                onClick={() => handleChat(user.name, user.id)}
-              >
-                <p className="flex space-x-2">
-                  <span
-                    className="border items-center  flex justify-center w-5 h-5 text-[12px] font-medium text-white"
-                    style={{
-                      backgroundColor: `hsl(${Math.floor(Math.random() * 360)}, 70%, 40%)`,
-                    }}
+        <div className="flex flex-col flex-1 min-h-0 px-1">
+          {/* Search input */}
+          <div className="px-1 mb-1">
+            <input
+              type="text"
+              placeholder="Search channels or people..."
+              value={sidebarSearch}
+              onChange={(e) => setSidebarSearch(e.target.value)}
+              className="w-full text-[13px] px-2.5 py-1.5 rounded-md bg-sidebar-hover text-white placeholder-sidebar-muted border border-sidebar-divider focus:outline-none focus:border-sidebar-active"
+            />
+          </div>
+          {/* Channels Section — has its own scroll */}
+          <div className="pt-1 flex flex-col min-h-0 flex-[0.95]">
+            <div className="slack-section-header shrink-0">
+              <span>Channels</span>
+              {totalChannelUnread > 0 && (
+                <span className="slack-unread !bg-red-500">{totalChannelUnread}</span>
+              )}
+            </div>
+            <ul className="flex-1 min-h-0 overflow-y-auto slack-scroll slack-scroll-dark">
+              {channels?.filter(ch => !sidebarSearch || ch.name?.toLowerCase().includes(sidebarSearch.toLowerCase())).map((channel) => {
+                const isActive = location.pathname === `/channelchat/${channel._id}`;
+                return (
+                <li key={channel._id}>
+                  <button
+                    type="button"
+                    className={`slack-row w-full justify-start text-left ${isActive ? "is-active" : ""}`}
+                    onClick={() => handleChannelChat(channel.name, channel._id, channel.description)}
                   >
-                    {user?.name?.charAt(0).toUpperCase()}
-                  </span>
-                  <span>{user.name}</span>
-                  {unreadCounts[user.id] > 0 && openChatId !== user.id && (
-                    <span className="text-green-500 font-bold">
-                      ({unreadCounts[user.id]})
+                    <Avatar
+                      name={channel?.name}
+                      src={channel?.image || ""}
+                      size={18}
+                      fit="contain"
+                      fontSize="10px"
+                    />
+                    <span className="flex-1 min-w-0 font-medium text-white flex items-center gap-1.5 overflow-hidden">
+                      <span className="text-sidebar-muted mr-0.5 shrink-0">#</span>
+                      <span className="truncate min-w-0">{channel.name}</span>
+                      <span
+                        className="shrink-0 inline-block w-2 h-2 rounded-full"
+                        style={{ backgroundColor: channel.statusTag === "Active" || !channel.statusTag ? "#22c55e" : "#ef4444" }}
+                        title={channel.statusTag || "Active"}
+                      />
                     </span>
-                  )}
-                </p>
-              </li>
-            ))}
-            <li
-              className="block p-2 text-gray-700 text-[15px] cursor-pointer"
+                    {channel?.unreadMessages > 0 && (
+                      <span className="slack-unread">{channel.unreadMessages}</span>
+                    )}
+                  </button>
+                </li>
+                );
+              })}
+            </ul>
+            <button
+              type="button"
+              className="slack-row text-sidebar-muted w-full mt-1 shrink-0"
+              onClick={handleChannel}
+            >
+              <span className="w-[18px] h-[18px] rounded-sm bg-sidebar-alt flex items-center justify-center text-sidebar-muted">+</span>
+              <span>Add channel</span>
+            </button>
+          </div>
+
+          {/* Messages Section — also scrolls independently */}
+          <div className="flex flex-col min-h-0 flex-[1.15] mt-1">
+            <div className="slack-section-header shrink-0">
+              <span>Direct messages</span>
+            </div>
+            <ul className="flex-1 min-h-0 overflow-y-auto slack-scroll slack-scroll-dark">
+              {employees?.filter(u => !sidebarSearch || u.name?.toLowerCase().includes(sidebarSearch.toLowerCase())).map((user, i) => {
+                const isActive = location.pathname === `/chat/${user.id}`;
+                return (
+                <li key={user.id || i}>
+                  <button
+                    type="button"
+                    onClick={() => handleChat(user.name, user.id)}
+                    className={`slack-row w-full justify-start text-left ${isActive ? "is-active" : ""}`}
+                  >
+                    <Avatar
+                      name={user?.name}
+                      src={user?.avatar || ""}
+                      size={18}
+                      fontSize="10px"
+                    />
+                    <span className="truncate flex-1 min-w-0 font-medium text-white">{user.name}</span>
+                    {unreadCounts[user.id] > 0 && openChatId !== user.id && (
+                      <span className="slack-unread">{unreadCounts[user.id]}</span>
+                    )}
+                  </button>
+                </li>
+                );
+              })}
+            </ul>
+            <button
+              type="button"
+              className="slack-row text-sidebar-muted w-full mt-1 shrink-0"
               onClick={handleCowrokers}
             >
-              + Add Coworker
-            </li>
-          </ul>
-        </div>
+              <span className="w-[18px] h-[18px] rounded-sm bg-sidebar-alt flex items-center justify-center text-sidebar-muted">+</span>
+              <span>Add coworker</span>
+            </button>
+          </div>
 
-        {/* Notes Section */}
-        <div className="mb-4">
-          <h3 className="text-[15px] font-bold text-gray-600 flex gap-2">
-            Notes <img src={arrow} alt="" className="w-[8px] pt-1" />
-          </h3>
-          <ul className="mt-2">
-            {employees?.slice(0, 4).map((user, i) => (
-              <li
-                key={i}
-                className="block p-2 text-gray-700 text-[14px] font-medium cursor-pointer"
-                onClick={() => handleNotes(user.name, user.id)}
-              >
-                <p className="flex space-x-2">
-                  <span
-                    className="border items-center  flex justify-center w-5 h-5 text-[12px] font-medium text-white"
-                    style={{
-                      backgroundColor: `hsl(${Math.floor(Math.random() * 360)}, 70%, 40%)`,
-                    }}
-                  >
-                    {user?.name?.charAt(0).toUpperCase()}
-                  </span>
-                  <span>{user.name}</span>
-
-                </p>
-              </li>
-            ))}
-            <li
-              className="block p-2 text-gray-700 text-[15px] cursor-pointer"
-              onClick={handleCowrokersNotes}
-            >
-              + Add Coworker
-            </li>
-          </ul>
         </div>
+          </>
+        )}
       </div>
+
+      {isEditAdminOpen && createPortal(
+        <div className="fixed inset-0 bg-black/40 z-[9999] flex items-center justify-center">
+          <div className="bg-white w-full max-w-md rounded-lg shadow-lg p-4">
+            <div className="flex items-center justify-between border-b pb-2">
+              <h3 className="text-sm font-semibold">Edit Admin Profile</h3>
+              <button type="button" onClick={handleEditAdminClose} className="text-gray-500">
+                &times;
+              </button>
+            </div>
+            {adminError && (
+              <p className="text-xs text-red-500 mt-2">{adminError}</p>
+            )}
+            <div className="mt-3">
+              <ProfilePictureUploader
+                name={adminProfile?.name || ""}
+                currentAvatar={adminProfile?.avatar || ""}
+                onUpdated={(profile) => {
+                  if (!profile) return;
+                  setAdminProfile((prev) => ({
+                    ...(prev || {}),
+                    ...profile,
+                  }));
+                  try {
+                    const stored = JSON.parse(
+                      localStorage.getItem("admin") || "null"
+                    );
+                    localStorage.setItem(
+                      "admin",
+                      JSON.stringify({ ...(stored || {}), ...profile })
+                    );
+                  } catch (e) {
+                    // ignore
+                  }
+                }}
+              />
+            </div>
+            <div className="mt-3 space-y-3">
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Name</label>
+                <input
+                  name="name"
+                  type="text"
+                  value={adminForm.name}
+                  onChange={handleAdminInputChange}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Email</label>
+                <input
+                  name="email"
+                  type="email"
+                  value={adminForm.email}
+                  onChange={handleAdminInputChange}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Phone</label>
+                <input
+                  name="phone"
+                  type="text"
+                  value={adminForm.phone}
+                  onChange={handleAdminInputChange}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Job Description</label>
+                <textarea
+                  name="jobDescription"
+                  rows={3}
+                  placeholder="Your role and responsibilities"
+                  value={adminForm.jobDescription || ""}
+                  onChange={handleAdminInputChange}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm outline-none resize-y"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Password</label>
+                <input
+                  name="password"
+                  type="password"
+                  value={adminForm.password}
+                  onChange={handleAdminInputChange}
+                  placeholder="Leave blank to keep current"
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm outline-none"
+                />
+              </div>
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={handleEditAdminClose}
+                className="px-3 py-2 text-sm border border-gray-300 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleAdminSave}
+                className="px-3 py-2 text-sm bg-orange-500 text-white rounded"
+                disabled={adminSaving}
+              >
+                {adminSaving ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </div>
+        </div>
+      , document.body)}
     </div>
   );
 }

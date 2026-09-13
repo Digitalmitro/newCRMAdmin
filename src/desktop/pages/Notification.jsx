@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 export default function NotificationSystem() {
   const [emp, setEmp] = useState([]);
-  const [selectedEmployees, setSelectedEmployees] = useState("");
+  const [selectedEmployees, setSelectedEmployees] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const [message, setMessage] = useState({
     title: "",
@@ -11,7 +11,12 @@ export default function NotificationSystem() {
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/auth/`);
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/auth/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         setEmp(data);
@@ -27,9 +32,9 @@ export default function NotificationSystem() {
 
   const handleSelectAll = () => {
     if (selectAll) {
-      setSelectedEmployees(""); 
+      setSelectedEmployees([]); 
     } else {
-      setSelectedEmployees("ALL"); 
+      setSelectedEmployees(["ALL"]); 
     }
     setSelectAll(!selectAll);
   };
@@ -105,30 +110,31 @@ export default function NotificationSystem() {
   
 
   return (
-    <div className="flex gap-6 p-6">
+    <div className="flex flex-col gap-4 p-3 sm:p-4 lg:flex-row lg:gap-6 lg:p-6">
       {/* Employee List */}
-      <div className="w-1/3 p-4 border border-gray-300 rounded shadow-md"> 
-        <h2 className="text-[16px] font-semibold mb-2 font-serif">Employees</h2>
-        <div className="h-[430px] overflow-auto">
-        <label className="flex items-center gap-2 mb-2 cursor-pointer text-[15px] text-gray-600">
+      <div className="w-full rounded-2xl border border-gray-300 bg-white p-4 shadow-md lg:w-1/3"> 
+        <h2 className="mb-3 text-[16px] font-semibold font-serif">Employees</h2>
+        <div className="max-h-[280px] overflow-auto lg:h-[430px]">
+        <label className="mb-2 flex items-center gap-2 cursor-pointer text-[14px] text-gray-600">
           <input type="checkbox" checked={selectAll} onChange={handleSelectAll} />
           Select All
         </label>
         {emp.map((employee, i) => (
-          <label key={i} className="flex items-center gap-2 mb-1 cursor-pointer text-[15px] text-gray-600">
+          <label key={i} className="mb-2 flex items-start gap-2 cursor-pointer text-[14px] text-gray-600">
             <input
               type="checkbox"
               checked={selectedEmployees.includes(employee._id) || selectedEmployees.includes("ALL")}
               onChange={() => handleIndividualSelect(employee._id)}
+              className="mt-1"
             />
-            {employee.name}
+            <span className="break-words">{employee.name}</span>
           </label>
         ))}
         </div>
       </div>
 
       {/* Push Notification System */}
-      <div className="w-2/3 p-4 border rounded border-gray-300 shadow-md">
+      <div className="w-full rounded-2xl border border-gray-300 bg-white p-4 shadow-md lg:w-2/3">
         <h2 className="text-[15px] font-serif font-semibold mb-2">Notification</h2>
         <div className="flex flex-col mt-4">
           <label htmlFor="title" className="text-[15px] font-medium font-serif">
@@ -157,7 +163,7 @@ export default function NotificationSystem() {
           required
         />
         <div className="flex justify-end">
-          <button onClick={sendNotification} className="px-2 text-orange-500 border border-orange-500 rounded">
+          <button onClick={sendNotification} className="rounded border border-orange-500 px-3 py-1.5 text-sm text-orange-500">
             Send
           </button>
         </div>

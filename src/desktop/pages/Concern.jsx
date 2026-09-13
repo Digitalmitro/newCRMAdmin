@@ -43,7 +43,13 @@ function Concern() {
         }
       );
 
-      getAllConcerns();
+      if (response.ok) {
+        getAllConcerns();
+        // Sidebar's pending-concerns badge listens for this in the same tab
+        // — a direct, immediate signal rather than relying solely on the
+        // soft-refresh socket round-trip for the admin who just acted.
+        window.dispatchEvent(new Event("concern-status-changed"));
+      }
     } catch (error) {
       //(error);
     }
@@ -61,17 +67,18 @@ function Concern() {
         }
       );
 
-      getAllConcerns();
+      if (response.ok) {
+        getAllConcerns();
+        window.dispatchEvent(new Event("concern-status-changed"));
+      }
     } catch (error) {
       //(error);
     }
   };
 
-  const sortedConcerns = [...concerns].sort((a, b) => {
-    if (a.status === "Pending") return -1;
-    if (b.status === "Pending") return 1;
-    return 0;
-  });
+  // Backend already returns these sorted by createdAt descending (latest
+  // first) - was previously re-sorted here to group all "Pending" items
+  // first, which silently broke pure date ordering.
 
   return (
     <div className="p-4 mt-6">
@@ -90,7 +97,7 @@ function Concern() {
             </tr>
           </thead>
           <tbody className="bg-gray-100 text-gray-700 text-[13px]">
-            {sortedConcerns.map((con, i) => (
+            {concerns.map((con, i) => (
               <tr
                 className="hover:bg-orange-100 transition-all duration-200 text-center"
                 key={i}
@@ -135,7 +142,7 @@ function Concern() {
                         className="bg-red-500 text-white px-4.5 py-1 rounded"
                         onClick={() => handleDeny(con?.user_id?._id, con?._id)}
                       >
-                        Deny
+                       &nbsp;&nbsp;&nbsp; Deny &nbsp;&nbsp;&nbsp;
                       </button>
                     </>
                   )}

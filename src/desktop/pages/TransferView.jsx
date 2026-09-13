@@ -1,129 +1,117 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 function TransferView() {
-const navigate=useNavigate()
-const location=useLocation()
-const callbackdata=location?.state?.item;
-// //(callbackdata)
+  const navigate = useNavigate();
+  const location = useLocation();
+  const callbackdata = location?.state?.item;
+  const [callback, setCallback] = useState({
+    name: callbackdata?.name || "",
+    email: callbackdata?.email || "",
+    phone: callbackdata?.phone || "",
+    calldate: callbackdata?.calldate || "",
+    domainName: callbackdata?.domainName || "",
+    buget: callbackdata?.buget || "",
+    country: callbackdata?.country || "",
+    address: callbackdata?.address || "",
+    comments: callbackdata?.comments || "",
+  });
 
-  const [callback,setCallback]=useState({
-    name:callbackdata?.name,
-    email:callbackdata?.email,
-    phone:callbackdata?.phone,
-    calldate:callbackdata?.calldate,
-    domainName:callbackdata?.domainName,
-    buget:callbackdata?.buget,
-    country:callbackdata?.country,
-    address:callbackdata?.address,
-    comments:callbackdata?.comments,
-  })
+  const fieldClassName =
+    "w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-orange-300 focus:ring-2 focus:ring-orange-100";
 
-  const handleChange=(e)=>{
-    let name=e.target.name;
-    let value=e.target.value;
-    setCallback({
-      ...callback,
-     
-      [name]:value,
-    })
-  } 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setCallback((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const handleEdit = async (id) => {
     try {
       const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/transfer/${id}`, {
-        method: "PUT", // or "PATCH" depending on your API
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify(callback)
+        body: JSON.stringify(callback),
       });
-  
-      if (response.ok) {
-      
-      navigate("/transferlist"); 
 
-       
+      if (response.ok) {
+        navigate("/transferlist");
       } else {
-        console.error("Failed to update callback");
+        console.error("Failed to update transfer");
       }
     } catch (error) {
-      console.error("Error updating callback:", error);
+      console.error("Error updating transfer:", error);
     }
   };
-  
-  // const handleSubmit=async(e)=>{
-  //   e.preventDefault();
-   
-  //   try {
-  //     const response=await fetch(`${import.meta.env.VITE_BACKEND_API}/callback/`,{
-  //       method:"POST",
-  //       headers:{
-  //         "Content-Type": "application/json",
-  //         "Authorization":`Bearer ${localStorage.getItem("token")}`
-  //       },
-  //       body: JSON.stringify(callback)
-  //     })
-  //     setCallback({
-  //       name: "",
-  //       email: "",
-  //       phone: "",
-  //       calldate: "",
-  //       domainName: "",
-  //       buget: "",
-  //       country: "",
-  //       address: "",
-  //       comments: "",
-  //     });
-  //     navigate("/saleslist")
-  //   } catch (error) {
-  //     //(error)
-  //   }
-  // }
 
-  // useEffect(()=>{
-  //   handleSubmit()
-  // })
-  return (
-    <div className="p-4">
-      <div className="flex justify-between px-4 border-b-2 border-gray-300 p-4">
-        <div>
-          <p className="text-[18px] font-medium">Details</p>
+  if (!callbackdata) {
+    return (
+      <div className="min-h-[calc(100dvh-92px)] bg-[#f7f7f5] px-4 py-4 md:px-6 md:py-5">
+        <div className="app-soft-panel rounded-[28px] px-6 py-8">
+          <h1 className="text-2xl font-semibold text-slate-900">Transfer details</h1>
+          <p className="mt-3 text-sm text-slate-500">
+            No transfer data was provided for this screen.
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate("/transferlist")}
+            className="mt-6 rounded-full bg-orange-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-orange-600"
+          >
+            Back to transfer list
+          </button>
         </div>
-        
       </div>
+    );
+  }
 
+  return (
+    <div className="min-h-[calc(100dvh-92px)] bg-[#f7f7f5] px-4 py-4 md:px-6 md:py-5">
+      <div className="app-soft-panel overflow-hidden rounded-[28px]">
+        <div className="border-b border-slate-200 px-5 py-5 md:px-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-orange-500">
+                Transfer Details
+              </p>
+              <h1 className="mt-2 text-2xl font-semibold text-slate-900">
+                Update transfer record
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm text-slate-500">
+                Keep handoff records accurate so transfers stay traceable across owners and teams.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate("/transferlist")}
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:border-orange-300 hover:text-orange-500"
+            >
+              Back to list
+            </button>
+          </div>
+        </div>
 
-      <div className="pt-10 px-2 ">
-        
-          <div className="grid grid-cols-2 ">
-            {/* <div className="space-x-8 mb-4">
-              <label htmlFor="text" className="text-[14px] font-medium">
-                Created Date
-              </label>
-              <input
-                type="text"
-                name="createDate"
-                id="createDate"
-                className="border border-[#A6A6A6] outline-none px-2 rounded "
-              />
-            </div> */}
-            <div className="space-x-19 mb-4">
-              <label htmlFor="text" className="text-[14px] font-medium">
+        <div className="px-5 py-5 md:px-6 md:py-6">
+          <div className="grid gap-5 lg:grid-cols-2">
+            <div>
+              <label htmlFor="name" className="mb-2 block text-sm font-medium text-slate-600">
                 Name
               </label>
               <input
                 type="text"
                 name="name"
                 id="name"
-                className="border border-[#A6A6A6] outline-none px-2 rounded "
+                className={fieldClassName}
                 onChange={handleChange}
                 value={callback.name}
               />
             </div>
-            <div className="space-x-20 mb-4">
-              <label htmlFor="text" className="text-[14px] font-medium">
+            <div>
+              <label htmlFor="email" className="mb-2 block text-sm font-medium text-slate-600">
                 Email
               </label>
               <input
@@ -132,12 +120,12 @@ const callbackdata=location?.state?.item;
                 id="email"
                 onChange={handleChange}
                 value={callback.email}
-                className="border border-[#A6A6A6] outline-none px-2 rounded "
+                className={fieldClassName}
               />
             </div>
-            <div className="space-x-4 mb-4">
-              <label htmlFor="text" className="text-[14px] font-medium">
-              Phone Number
+            <div>
+              <label htmlFor="phone" className="mb-2 block text-sm font-medium text-slate-600">
+                Phone Number
               </label>
               <input
                 type="number"
@@ -145,11 +133,14 @@ const callbackdata=location?.state?.item;
                 id="phone"
                 onChange={handleChange}
                 value={callback.phone}
-                className="border border-[#A6A6A6] outline-none px-2 rounded "
+                className={fieldClassName}
               />
             </div>
-            <div className="space-x-6 mb-4">
-              <label htmlFor="text" className="text-[14px] font-medium">
+            <div>
+              <label
+                htmlFor="domainName"
+                className="mb-2 block text-sm font-medium text-slate-600"
+              >
                 Domain Name
               </label>
               <input
@@ -158,11 +149,11 @@ const callbackdata=location?.state?.item;
                 id="domainName"
                 onChange={handleChange}
                 value={callback.domainName}
-                className="border border-[#A6A6A6] outline-none px-2 rounded "
+                className={fieldClassName}
               />
             </div>
-            <div className="space-x-16 mb-4">
-              <label htmlFor="text" className="text-[14px] font-medium">
+            <div>
+              <label htmlFor="address" className="mb-2 block text-sm font-medium text-slate-600">
                 Address
               </label>
               <input
@@ -171,11 +162,11 @@ const callbackdata=location?.state?.item;
                 id="address"
                 onChange={handleChange}
                 value={callback.address}
-                className="border border-[#A6A6A6] outline-none px-2 rounded "
+                className={fieldClassName}
               />
             </div>
-            <div className="space-x-16 mb-4">
-              <label htmlFor="text" className="text-[14px] font-medium">
+            <div>
+              <label htmlFor="country" className="mb-2 block text-sm font-medium text-slate-600">
                 Country
               </label>
               <input
@@ -184,11 +175,11 @@ const callbackdata=location?.state?.item;
                 id="country"
                 onChange={handleChange}
                 value={callback.country}
-                className="border border-[#A6A6A6] outline-none px-2 rounded "
+                className={fieldClassName}
               />
             </div>
-            <div className="space-x-14 mb-4">
-              <label htmlFor="text" className="text-[14px] font-medium">
+            <div>
+              <label htmlFor="calldate" className="mb-2 block text-sm font-medium text-slate-600">
                 Call Date
               </label>
               <input
@@ -197,11 +188,11 @@ const callbackdata=location?.state?.item;
                 id="calldate"
                 onChange={handleChange}
                 value={callback.calldate}
-                className="border border-[#A6A6A6] outline-none px-2 rounded "
+                className={fieldClassName}
               />
             </div>
-            <div className="space-x-18 mb-4">
-              <label htmlFor="text" className="text-[14px] font-medium">
+            <div>
+              <label htmlFor="buget" className="mb-2 block text-sm font-medium text-slate-600">
                 Budget
               </label>
               <input
@@ -210,38 +201,35 @@ const callbackdata=location?.state?.item;
                 id="buget"
                 value={callback.buget}
                 onChange={handleChange}
-                className="border border-[#A6A6A6] outline-none px-2 rounded "
-              />
-            </div>
-            {/* <div className="space-x-12 mb-4">
-              <label htmlFor="text" className="text-[14px] font-medium">
-                Created By
-              </label>
-              <input
-                type="text"
-                className="border border-[#A6A6A6] outline-none px-2 rounded "
-              />
-            </div> */}
-            <div className="mb-4 flex space-x-13 ">
-              <label htmlFor="comment" className="text-[14px] font-medium mb-1">
-                Comment
-              </label>
-              <textarea
-              name="comments"
-                id="comment"
-                onChange={handleChange}
-                value={callback.comments}
-                rows={3}
-                className="border border-[#A6A6A6] outline-none px-2 py-1 rounded w-[44%]"
+                className={fieldClassName}
               />
             </div>
           </div>
-          <div className="flex justify-center pt-8">
-        <button type="submit" className="border  border-orange-500 text-[12px] py-0.5 text-orange-500 px-4 rounded cursor-pointer" onClick={()=>{handleEdit(callbackdata?._id)}}>Edit</button>
+
+          <div className="mt-5">
+            <label htmlFor="comment" className="mb-2 block text-sm font-medium text-slate-600">
+              Comments
+            </label>
+            <textarea
+              name="comments"
+              id="comment"
+              onChange={handleChange}
+              value={callback.comments}
+              rows={5}
+              className={`${fieldClassName} min-h-[160px] resize-none`}
+            />
+          </div>
+
+          <div className="mt-6 flex justify-end">
+            <button
+              type="button"
+              className="rounded-full bg-orange-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-orange-600"
+              onClick={() => handleEdit(callbackdata?._id)}
+            >
+              Save transfer details
+            </button>
+          </div>
         </div>
-        
-        
-        
       </div>
     </div>
   );
