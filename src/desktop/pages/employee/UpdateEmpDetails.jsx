@@ -164,7 +164,9 @@ function UpdateEmpDetails() {
             <input
               name="password"
               type={showPassword ? "text" : "password"}
-              placeholder="Enter Password"
+              value={data?.password || ""}
+              onChange={handleChange}
+              placeholder="Leave blank to keep current password"
               className="w-full px-3 py-2 pr-10 border rounded-md outline-none border-gray-300"
             />
             <button
