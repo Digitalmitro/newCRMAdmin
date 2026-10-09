@@ -38,7 +38,7 @@ function AttendanceList() {
     () => ({
       total: attendance.filter((e) => e.punchIn && !e.isSynthetic).length,
       late: attendance.filter((entry) => entry?.status === "Late").length,
-      absent: attendance.filter((entry) => entry?.workStatus === "Absent" || entry?.workStatus === "Week-Off").length,
+      absent: attendance.filter((entry) => !entry?.punchIn && (entry?.workStatus === "Absent" || entry?.workStatus === "Week-Off")).length,
       complete: attendance.filter((entry) => entry?.punchOut).length,
     }),
     [attendance]
